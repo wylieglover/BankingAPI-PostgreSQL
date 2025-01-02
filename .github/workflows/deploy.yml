@@ -18,6 +18,8 @@ jobs:
           echo "DB_IP=${{ secrets.DB_IP }}" >> ./bank_api/.env
           echo "DB_PORT=${{ secrets.DB_PORT }}" >> ./bank_api/.env
           echo "DB_NAME=${{ secrets.DB_NAME }}" >> ./bank_api/.env
+          echo "DB_SCHEMA=${{ secrets.DB_SCHEMA }}" >> ./bank_api/.env
+          echo "PORT=${{ secrets.PORT }}" >> ./bank_api/.env
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ./bank_api/.env
           cat ./bank_api/.env
       - name: Run Docker Compose

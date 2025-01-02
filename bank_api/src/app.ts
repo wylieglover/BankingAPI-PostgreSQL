@@ -48,6 +48,6 @@ class App {
     }
 }
 
-const PORT = parseInt(process.env.PORT || '3000', 10);
+const PORT = parseInt(process.env.PORT || '3002', 10);
 const server = new App(PORT);
 server.listen();
