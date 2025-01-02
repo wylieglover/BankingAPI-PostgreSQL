@@ -9,6 +9,30 @@ export class CustomerModel {
         this.prisma = prisma;
     }
 
+    login = async (
+        username: string, password: string
+    ): Promise<customers | null> => {
+        try {
+            const customer = await this.prisma.customers.findUnique({
+                where: { username }, // Ensure you're querying by username
+            });
+
+            if (!customer) {
+                throw new Error('Invalid username or password');
+            }
+
+            const isPasswordValid = await bcrypt.compare(password, customer.password);
+            if (!isPasswordValid) {
+                throw new Error('Invalid username or password');
+            }
+
+            return customer;
+        } catch (error) {
+            console.error('Login error:', error);
+            throw error;
+        }
+    }
+
     createCustomer = async (
         customerData: CreateCustomerDTO
     ): Promise<customers> => {

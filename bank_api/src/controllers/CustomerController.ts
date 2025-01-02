@@ -27,36 +27,23 @@ export class CustomerController {
         }
     };
 
-    login = async (
-        req: Request,
-        res: Response,
-        next: NextFunction
-    ): Promise<void> => {
+    login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const { username, password } = req.body;
-            const customer = await this.customerModel.getCustomerByUsername(username);
+
+            if (!username || !password) {
+                res.status(400).json({ error: 'Username and password are required' });
+                return;
+            }
+
+            const customer = await this.customerModel.login(username, password);
 
             if (!customer) {
-                res.status(401).json({ error: 'Invalid credentials' });
+                res.status(401).json({ error: 'Invalid username or password' });
                 return;
             }
 
-            const isValidPassword = await this.customerModel.validateCustomerPassword(
-                customer.password,
-                password
-            );
-
-            if (!isValidPassword) {
-                res.status(401).json({ error: 'Invalid credentials' });
-                return;
-            }
-
-            const token = jwt.sign(
-                { customerId: customer.customer_id },
-                process.env.JWT_SECRET || 'your-secret-key',
-                { expiresIn: '24h' }
-            );
-            res.json({ token, customer: { ...customer, password: undefined } });
+            res.status(200).json({ message: 'Login successful', customer });
         } catch (error) {
             next(error);
         }
