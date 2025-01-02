@@ -1,0 +1,16 @@
+services:
+  web:
+    container_name: bank_api
+    restart: unless-stopped
+    build:
+      context: ./bank_api
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@${DB_IP}:${DB_PORT}/${DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+      NODE_ENV: production
+    volumes:
+      - ./bank_api:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - "3001:3001"
