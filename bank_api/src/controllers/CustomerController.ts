@@ -2,8 +2,12 @@ import { Request, Response, NextFunction } from 'express';
 import { CustomerModel } from '../models/CustomerModel';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
-
-import { CreateCustomerDTO, UpdateCustomerDTO, CustomerPaginationParams } from '../types/customer';
+import {
+    CreateCustomerDTO,
+    UpdateCustomerDTO,
+    CustomerPaginationParams,
+} from '../types/customer';
+import { successResponse, errorResponse } from '../middleware/authMiddleware';
 
 export class CustomerController {
     private customerModel: CustomerModel;
@@ -21,7 +25,9 @@ export class CustomerController {
             const customerData: CreateCustomerDTO = req.body;
 
             const customer = await this.customerModel.createCustomer(customerData);
-            res.status(201).json({ ...customer, password: undefined });
+            customer.password = '';
+
+            successResponse(res, 'Customer created', customer, 201);
         } catch (error) {
             next(error);
         }
@@ -32,18 +38,18 @@ export class CustomerController {
             const { username, password } = req.body;
 
             if (!username || !password) {
-                res.status(400).json({ error: 'Username and password are required' });
+                errorResponse(res, 'Username and password are required', 400);
                 return;
             }
 
             const customer = await this.customerModel.login(username, password);
 
             if (!customer) {
-                res.status(401).json({ error: 'Invalid username or password' });
+                errorResponse(res, 'Invalid username or password', 401);
                 return;
             }
 
-            res.status(200).json({ message: 'Login successful', customer });
+            successResponse(res, 'Login successful', { customer }, 200);
         } catch (error) {
             next(error);
         }
@@ -61,11 +67,16 @@ export class CustomerController {
             const customers = await this.customerModel.getAllCustomers({ page, pageSize });
 
             if (customers.length === 0) {
-                res.status(404).json({ error: 'No customers found' });
+                errorResponse(res, 'No customers found', 404);
                 return;
             }
 
-            res.json(customers.map(customer => ({ ...customer, password: undefined })));
+            const sanitizedCustomers = customers.map((c) => ({
+                ...c,
+                password: undefined,
+            }));
+
+            successResponse(res, 'Customers retrieved', sanitizedCustomers);
         } catch (error) {
             next(error);
         }
@@ -79,19 +90,18 @@ export class CustomerController {
         try {
             const { customerId } = req.params;
 
-            // Validate input (additional safeguard)
             if (!customerId) {
-                res.status(400).json({ error: 'Customer ID is required' });
+                errorResponse(res, 'Customer ID is required', 400);
                 return;
             }
 
             const customer = await this.customerModel.getCustomerById(customerId);
 
             if (!customer) {
-                res.status(404).json({ error: 'Customer not found' });
+                errorResponse(res, 'Customer not found', 404);
                 return;
             }
-            res.json({ ...customer, password: undefined });
+            successResponse(res, 'Customer retrieved', customer);
         } catch (error) {
             next(error);
         }
@@ -115,7 +125,15 @@ export class CustomerController {
             };
 
             const customer = await this.customerModel.updateCustomer(updateCustomerData);
-            res.json({ customer, password: undefined });
+
+            if (!customer) {
+                errorResponse(res, 'Customer not found', 404);
+                return;
+            }
+
+            customer.password = '';
+
+            successResponse(res, 'Customer updated', customer);
         } catch (error) {
             next(error);
         }

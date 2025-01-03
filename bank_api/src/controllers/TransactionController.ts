@@ -3,6 +3,8 @@ import { TransactionModel } from '../models/TransactionModel';
 import { PrismaClient, transaction_type } from '@prisma/client';
 import { CreateTransactionDTO, UpdateTransactionDTO, TransactionPaginationParams } from '../types/transaction';
 
+import { errorResponse, successResponse } from '../middleware/authMiddleware';
+
 export class TransactionController {
     private transactionModel: TransactionModel;
 
@@ -19,12 +21,18 @@ export class TransactionController {
             const transactionData: CreateTransactionDTO = req.body;
 
             if (!Object.values(transaction_type).includes(transactionData.type)) {
-                res.status(400).json({ error: `Invalid account type. Allowed values: ${Object.values(transaction_type).join(', ')}` });
+                errorResponse(
+                    res,
+                    `Invalid transaction type. Allowed values: ${Object.values(transaction_type).join(', ')}`,
+                    400
+                );
                 return;
             }
 
-            const transaction = await this.transactionModel.createTransaction(transactionData);
-            res.status(201).json(transaction);
+            const transaction = await this.transactionModel.createTransaction(
+                transactionData
+            );
+            successResponse(res, 'Transaction created', transaction, 201);
         } catch (error) {
             next(error);
         }
@@ -47,7 +55,7 @@ export class TransactionController {
             };
 
             const transactions = await this.transactionModel.getAllTransactions(params);
-            res.json(transactions);
+            successResponse(res, 'Transactions retrieved', transactions);
         } catch (error) {
             next(error);
         }
@@ -62,18 +70,18 @@ export class TransactionController {
             const transactionId = parseInt(req.params.transactionId, 10);
 
             if (isNaN(transactionId)) {
-                res.status(400).json({ error: 'Invalid transaction ID' });
+                errorResponse(res, 'Invalid transaction ID', 400);
                 return;
             }
 
             const transaction = await this.transactionModel.getTransactionById(transactionId);
 
             if (!transaction) {
-                res.status(404).json({ error: 'Transaction not found' });
+                errorResponse(res, 'Transaction not found', 404);
                 return;
             }
 
-            res.json(transaction);
+            successResponse(res, 'Transaction retrieved', transaction)
         } catch (error) {
             next(error);
         }
@@ -95,12 +103,12 @@ export class TransactionController {
             const { type, amount } = req.body;
 
             if (amount !== undefined && (typeof amount !== 'number' || amount <= 0)) {
-                res.status(400).json({ error: 'Amount must be a positive number' });
+                errorResponse(res, 'Amount must be a positive number', 400);
                 return;
             }
 
             if (type !== undefined && !['deposit', 'withdraw'].includes(type)) {
-                res.status(400).json({ error: 'Type must be either "deposit" or "withdraw"' });
+                errorResponse(res, 'Type must be either "deposit" or "withdraw"', 400);
                 return;
             }
 
@@ -111,7 +119,13 @@ export class TransactionController {
             };
 
             const updatedTransaction = await this.transactionModel.updateTransaction(updatedData);
-            res.json(updatedTransaction);
+
+            if (!updatedTransaction) {
+                errorResponse(res, 'Transaction not found', 404);
+                return;
+            }
+
+            successResponse(res, 'Transaction updated', updatedTransaction);
         } catch (error) {
             next(error);
         }
@@ -125,7 +139,7 @@ export class TransactionController {
         try {
             const transactionId = parseInt(req.params.transactionId, 10);
             if (isNaN(transactionId)) {
-                res.status(400).json({ error: 'Invalid transaction ID' });
+                errorResponse(res, 'Invalid transaction ID', 400);
                 return;
             }
 

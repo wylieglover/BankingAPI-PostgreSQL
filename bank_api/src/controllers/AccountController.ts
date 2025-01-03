@@ -3,6 +3,7 @@ import { AccountModel } from '../models';
 import { account_type } from '../prisma';
 import { PrismaClient } from '@prisma/client';
 import { CreateAccountDTO, UpdateAccountDTO, AccountPaginationParams } from '../types/account';
+import { successResponse, errorResponse } from '../middleware/authMiddleware';
 
 export class AccountController {
     private accountModel: AccountModel;
@@ -21,28 +22,36 @@ export class AccountController {
             const { type, balance } = req.body;
 
             if (typeof customerId !== 'string' || typeof balance !== 'number') {
-                res.status(400).json({ error: 'Invalid input types' });
+                errorResponse(res, 'Invalid input types', 400);
                 return;
             }
 
             if (!Object.values(account_type).includes(type)) {
-                res.status(400).json({ error: `Invalid account type. Allowed values: ${Object.values(account_type).join(', ')}` });
+                errorResponse(
+                    res,
+                    `Invalid account type. Allowed values: ${Object.values(account_type).join(', ')}`,
+                    400
+                );
                 return;
             }
 
             const accountData: CreateAccountDTO = { customerId, type, balance };
-
             const account = await this.accountModel.createAccount(accountData);
-            res.status(201).json({
-                message: "Account created successfully",
-                data: {
+
+            successResponse(
+                res,
+                'Account created successfully',
+                {
                     accountId: account.account_id,
                     customerId: account.customer_id,
                     type: account.type,
                     balance: `$${account.balance.toFixed(2)}`,
-                    createdAt: account.created_at ? new Date(account.created_at).toLocaleString() : null
-                }
-            });
+                    createdAt: account.created_at
+                        ? new Date(account.created_at).toLocaleString()
+                        : null,
+                },
+                201
+            );
         } catch (error) {
             next(error);
         }
@@ -63,12 +72,13 @@ export class AccountController {
                 page,
                 pageSize,
             };
+
             const accounts = await this.accountModel.getAllAccounts(params);
-            res.json(accounts);
+            successResponse(res, 'Accounts retrieved successfully', accounts);
         } catch (error) {
             next(error);
         }
-    }
+    };
 
     getAccountByIdController = async (
         req: Request,
@@ -79,16 +89,17 @@ export class AccountController {
             const { accountId } = req.params;
 
             if (typeof accountId !== 'string') {
-                res.status(400).json({ error: 'Invalid account ID' });
+                errorResponse(res, 'Invalid account ID', 400);
                 return;
             }
-            const account = await this.accountModel.getAccountById(accountId);
 
+            const account = await this.accountModel.getAccountById(accountId);
             if (!account) {
-                res.status(404).json({ error: 'Account not found' });
+                errorResponse(res, 'Account not found', 404);
                 return;
             }
-            res.json(account);
+
+            successResponse(res, 'Account retrieved successfully', account);
         } catch (error) {
             next(error);
         }
@@ -103,33 +114,35 @@ export class AccountController {
             const { accountId } = req.params;
 
             if (typeof accountId !== 'string') {
-                res.status(400).json({ error: 'Invalid account ID' });
+                errorResponse(res, 'Invalid account ID', 400);
                 return;
             }
 
             const { type, balance } = req.body;
 
             if (type && !Object.values(account_type).includes(type as account_type)) {
-                res.status(400).json({ error: 'Invalid account type' });
+                errorResponse(
+                    res,
+                    `Invalid account type. Allowed: ${Object.values(account_type).join(', ')}`,
+                    400
+                );
                 return;
             }
 
             if (balance && typeof balance !== 'number') {
-                res.status(400).json({ error: 'Invalid balance type' });
+                errorResponse(res, 'Invalid balance type', 400);
                 return;
             }
 
-            const updatedData: UpdateAccountDTO = {
-                accountId, type, balance
-            };
-
+            const updatedData: UpdateAccountDTO = { accountId, type, balance };
             const account = await this.accountModel.updateAccount(updatedData);
 
             if (!account) {
-                res.status(404).json({ error: 'Account not found' });
+                errorResponse(res, 'Account not found', 404);
                 return;
             }
-            res.json(account);
+
+            successResponse(res, 'Account updated successfully', account);
         } catch (error) {
             next(error);
         }
@@ -144,7 +157,7 @@ export class AccountController {
             const { accountId } = req.params;
 
             if (typeof accountId !== 'string') {
-                res.status(400).json({ error: 'Invalid account ID' });
+                errorResponse(res, 'Invalid account ID', 400);
                 return;
             }
 

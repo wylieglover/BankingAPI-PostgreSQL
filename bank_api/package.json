@@ -8,7 +8,7 @@
     "prisma:pull": "prisma db pull",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "dev": "npx tsx src/app.ts"
+    "dev": "tsx src/app.ts"
   },
   "keywords": [],
   "author": "Wylie G",

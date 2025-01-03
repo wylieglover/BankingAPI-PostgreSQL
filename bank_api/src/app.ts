@@ -3,7 +3,7 @@ import routes from './routes';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { Logger, stream } from './middleware/logger';
+import { Logger, stream } from './middleware/Logger';
 
 dotenv.config();
 
