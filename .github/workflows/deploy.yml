@@ -1,8 +1,10 @@
 name: run-docker-compose
+
 on:
   push:
     branches:
       - main 
+
 jobs:
   deploy:
     runs-on: self-hosted
@@ -10,18 +12,17 @@ jobs:
       - name: Checkout the repo
         uses: actions/checkout@v4
 
-      - name: Create env file
+      - name: Create .env file
         run: |
-          touch ./bank_api/.env
-          echo "DB_USER=${{ secrets.DB_USER }}" >> ./bank_api/.env
+          echo "DB_USER=${{ secrets.DB_USER }}" > ./bank_api/.env
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> ./bank_api/.env
           echo "DB_IP=${{ secrets.DB_IP }}" >> ./bank_api/.env
-          echo "DB_PORT=${{ secrets.DB_PORT }}" >> ./bank_api/.env
           echo "DB_NAME=${{ secrets.DB_NAME }}" >> ./bank_api/.env
           echo "DB_SCHEMA=${{ secrets.DB_SCHEMA }}" >> ./bank_api/.env
           echo "PORT=${{ secrets.PORT }}" >> ./bank_api/.env
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ./bank_api/.env
+          echo "DATABASE_URL=postgresql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.DB_IP }}:5432/${{ secrets.DB_NAME }}?schema=${{ secrets.DB_SCHEMA }}" >> ./bank_api/.env
           cat ./bank_api/.env
+
       - name: Run Docker Compose
         run: docker compose -f ./bank_api/docker-compose.yml up -d --force-recreate --build
-        

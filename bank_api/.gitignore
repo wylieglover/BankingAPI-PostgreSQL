@@ -12,7 +12,6 @@ dist
 .env
 
 # Docker
-Dockerfile
 .dockerignore
 
 # Prisma
