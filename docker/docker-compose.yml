@@ -1,6 +1,6 @@
 services:
   web:
-    container_name: bank_api
+    container_name: banking-app
     restart: unless-stopped
     build:
       context: ..
