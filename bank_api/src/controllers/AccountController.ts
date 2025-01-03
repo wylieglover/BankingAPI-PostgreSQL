@@ -162,7 +162,7 @@ export class AccountController {
             }
 
             await this.accountModel.deleteAccount(accountId);
-            res.status(204).send();
+            successResponse(res, 'Account deleted successfully', null, 204);
         } catch (error) {
             next(error);
         }

@@ -2,8 +2,8 @@ import { Router } from 'express';
 import { prisma } from '../prisma';
 import { CustomerController } from '../controllers/CustomerController';
 import { authenticate, createCustomerRules, updateCustomerRules, validate } from '../middleware/authMiddleware';
-import accountRoutes from './AccountRoute';
-import beneficiaryRoutes from './BeneficiaryRoute';
+import accountRoutes from './accounts.route';
+import beneficiaryRoutes from './beneficiaries.route';
 
 const router = Router();
 const customerController = new CustomerController(prisma);

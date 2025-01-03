@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { AccountController } from '../controllers';
 import { prisma } from '../prisma';
 import { authenticate, validate, createAccountRules, updateAccountRules } from '../middleware/authMiddleware';
-import transactionRoutes from './TransactionRoute';
+import transactionRoutes from './transactions.route';
 
 const router = Router({ mergeParams: true });;
 const accountController = new AccountController(prisma);

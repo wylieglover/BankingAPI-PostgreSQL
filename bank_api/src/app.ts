@@ -1,5 +1,5 @@
 import express, { Application, Request, Response, NextFunction } from 'express';
-import routes from './routes';
+import routes from './routes/index.routes';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import morgan from 'morgan';

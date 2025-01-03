@@ -59,7 +59,7 @@ export class AccountModel {
                 include: { customers: true },
             });
         } catch (error) {
-            console.error('Error fetching account:', error);
+            console.error('Error fetching account by accountId:', error);
             throw error;
         }
     }
