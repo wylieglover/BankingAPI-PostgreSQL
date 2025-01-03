@@ -1,14 +1,15 @@
 {
-  "name": "bank-api",
+  "name": "banking-app",
   "version": "1.0.0",
-  "main": "app.ts",
+  "main": "server/dist/app.js",
   "scripts": {
-    "start": "node dist/app.js",
-    "build": "tsc",
+    "start": "TS_NODE_PROJECT=./config/tsconfig.json node -r tsconfig-paths/register dist/server/app.js",
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc -p ./config/tsconfig.json",
     "prisma:pull": "prisma db pull",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "dev": "tsx src/app.ts"
+    "dev": "TS_NODE_PROJECT=./config/tsconfig.json tsx -r tsconfig-paths/register src/server/app.ts"
   },
   "keywords": [],
   "author": "Wylie G",
@@ -16,7 +17,7 @@
   "type": "commonjs",
   "description": "Banking API System",
   "prisma": {
-    "schema": "./src/prisma/schema.prisma"
+    "schema": "./src/server/prisma/schema.prisma"
   },
   "dependencies": {
     "@prisma/client": "^6.1.0",

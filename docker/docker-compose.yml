@@ -3,8 +3,8 @@ services:
     container_name: bank_api
     restart: unless-stopped
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_IP}:5432/${DB_NAME}?schema=${DB_SCHEMA}
@@ -13,4 +13,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
     ports:
       - "3001:3001"
-    command: sh -c "npx prisma db pull && node -r tsconfig-paths/register dist/app.js"
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    command: sh -c "npm run prisma:pull && npm start"

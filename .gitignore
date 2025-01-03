@@ -15,9 +15,9 @@ dist
 .dockerignore
 
 # Prisma
-prisma/.env
-prisma/migrations/
+src/server/prisma/.env
+src/server/prisma/migrations/
 
 # Logs
-logs
+src/server/logs
 *.log
