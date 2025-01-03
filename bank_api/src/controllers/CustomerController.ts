@@ -148,7 +148,7 @@ export class CustomerController {
             const { customerId } = req.params;
 
             await this.customerModel.deleteCustomer(customerId);
-            res.status(204).send();
+            successResponse(res, 'Customer deleted successfully', null, 204);
         } catch (error) {
             next(error)
         }

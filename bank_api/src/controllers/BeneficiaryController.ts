@@ -133,7 +133,7 @@ export class BeneficiaryController {
             }
 
             await this.beneficiariesModel.deleteBeneficiary(beneficiaryId);
-            res.status(204).send();
+            successResponse(res, 'Beneficiary deleted successfully', null, 204);
         } catch (error) {
             next(error);
         }

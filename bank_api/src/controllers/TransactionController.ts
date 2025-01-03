@@ -144,7 +144,7 @@ export class TransactionController {
             }
 
             await this.transactionModel.deleteTransaction(transactionId);
-            res.status(204).send();
+            successResponse(res, 'Transaction deleted successfully', null, 204);
         } catch (error) {
             next(error);
         }
