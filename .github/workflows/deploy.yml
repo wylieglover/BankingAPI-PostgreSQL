@@ -12,17 +12,25 @@ jobs:
       - name: Checkout the repo
         uses: actions/checkout@v4
 
-      - name: Create .env file
+      - name: Create server .env file
         run: |
-          echo "DB_USER=${{ secrets.DB_USER }}" > .env
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-          echo "DB_IP=${{ secrets.DB_IP }}" >> .env
-          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
-          echo "DB_SCHEMA=${{ secrets.DB_SCHEMA }}" >> .env
-          echo "PORT=${{ secrets.PORT }}" >> .env
-          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
-          echo "DATABASE_URL=postgresql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.DB_IP }}:5432/${{ secrets.DB_NAME }}?schema=${{ secrets.DB_SCHEMA }}" >> .env
-          cat .env
+          echo "DB_USER=${{ secrets.DB_USER }}" > ./src/server/.env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> ./src/server/.env
+          echo "DB_IP=${{ secrets.DB_IP }}" >> ./src/server/.env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> ./src/server/.env
+          echo "DB_SCHEMA=${{ secrets.DB_SCHEMA }}" >> ./src/server/.env
+          echo "PORT=${{ secrets.PORT }}" >> ./src/server/.env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ./src/server/.env
+          echo "NODE_ENV=production" >> ./src/server/.env
+          echo "DATABASE_URL=postgresql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.DB_IP }}:5432/${{ secrets.DB_NAME }}?schema=${{ secrets.DB_SCHEMA }}" >> ./src/server/.env
+          echo "Server .env file created:"
+          cat ./src/server/.env
 
+      - name: Create client .env file
+        run: |
+          echo "NEXT_PUBLIC_API_BASE_URL=${{ secrets.NEXT_PUBLIC_API_BASE_URL }}" > ./src/client/.env
+          echo "NODE_ENV=production" >> ./src/client/.env
+          echo "Client .env file created:"
+          cat ./src/client/.env
       - name: Run Docker Compose
         run: docker compose -f ./docker/docker-compose.yml up -d --force-recreate --build

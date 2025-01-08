@@ -58,6 +58,24 @@ export class BeneficiaryController {
         }
     };
 
+    getBeneficiariesCount = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> => {
+        try {
+            const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+            const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+
+            const dateFilter = startDate || endDate ? { startDate, endDate } : undefined;
+            const beneficiariesCount = await this.beneficiariesModel.count(dateFilter);
+
+            successResponse(res, 'Beneficiaries count retrieved', { count: beneficiariesCount });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     getBeneficiaryByIdController = async (
         req: Request,
         res: Response,

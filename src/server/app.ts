@@ -3,9 +3,14 @@ import routes from './routes/index.routes';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { Logger, stream } from './middleware/Logger';
+import { Logger, stream } from './middleware/utils/Logger';
+import cors from 'cors';
 
 dotenv.config();
+
+if (!process.env.PORT) {
+    process.exit(1);
+}
 
 class App {
     public app: Application;
@@ -25,6 +30,15 @@ class App {
         this.app.use(express.json());
         this.app.use(express.urlencoded({ extended: true }));
         this.app.use(morgan('combined', { stream }));
+
+        this.app.use(
+            cors({
+                origin: 'http://localhost:3000',
+                methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+                allowedHeaders: ['Authorization', 'Content-Type'],
+                credentials: true,
+            })
+        );
     }
 
     private initializeRoutes() {
@@ -35,9 +49,21 @@ class App {
     }
 
     private initializeErrorHandling() {
-        this.app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+        this.app.use((err: any, req: Request, res: Response, next: NextFunction) => {
             Logger.error(`Primary Handler: ${err.message}`);
-            res.status(500).json({ error: err.message });
+
+            // Development-only error details (remove in production)
+            if (process.env.NODE_ENV === 'development') {
+                res.status(err.status || 500).json({
+                    error: err.message,
+                    stack: err.stack
+                });
+            } else {
+                // Production: Send generic error message
+                res.status(err.status || 500).json({
+                    error: 'Internal Server Error'
+                });
+            }
         });
     }
 
@@ -48,6 +74,6 @@ class App {
     }
 }
 
-const PORT = parseInt(process.env.PORT || '3002', 10);
+const PORT = parseInt(process.env.PORT);
 const server = new App(PORT);
 server.listen();

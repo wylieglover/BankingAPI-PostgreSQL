@@ -26,6 +26,24 @@ export class BeneficiariesModel {
         }
     }
 
+    count = async (dateFilter?: {
+        startDate?: Date;
+        endDate?: Date;
+    }): Promise<number> => {
+        if (!dateFilter) {
+            return await this.prisma.beneficiaries.count();
+        }
+
+        return await this.prisma.beneficiaries.count({
+            where: {
+                created_at: {
+                    gte: dateFilter.startDate,
+                    lte: dateFilter.endDate,
+                }
+            }
+        });
+    };
+
     getAllBeneficiaries = async (
         params: BeneficiaryPaginationParams
     ): Promise<beneficiaries[]> => {

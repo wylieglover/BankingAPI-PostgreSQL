@@ -50,6 +50,62 @@ export class TransactionModel {
         }
     }
 
+    getAverageTransactionAmount = async () => {
+        const result = await this.prisma.transactions.aggregate({
+            _avg: {
+                amount: true,
+            },
+        });
+
+        return result._avg.amount || 0;
+    }
+
+    getTransactionTypeDistribution = async () => {
+        const distribution = await this.prisma.transactions.groupBy({
+            by: ['type'],
+            _count: {
+                type: true,
+            },
+        });
+
+        return distribution.map((entry) => ({
+            type: entry.type,
+            count: entry._count.type,
+        }));
+    }
+
+    getTransactionVolumeByDay = async () => {
+        return await this.prisma.$queryRaw`
+            SELECT 
+                DATE_TRUNC('day', created_at) as day,
+                COUNT(*) as count,
+                SUM(amount) as volume
+            FROM transactions
+            GROUP BY DATE_TRUNC('day', created_at)
+            ORDER BY day DESC
+            LIMIT 30
+        `;
+    };
+
+    count = async (dateFilter?: {
+        startDate?: Date;
+        endDate?: Date;
+    }): Promise<number> => {
+        if (!dateFilter) {
+            return await this.prisma.transactions.count();
+        }
+
+        return await this.prisma.transactions.count({
+            where: {
+                timestamp: {
+                    gte: dateFilter.startDate,
+                    lte: dateFilter.endDate,
+                }
+            }
+        });
+    };
+
+
     getAllTransactions = async (
         params: TransactionPaginationParams
     ): Promise<transactions[]> => {

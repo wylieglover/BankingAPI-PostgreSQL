@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import { PrismaClient, customers } from '@prisma/client';
 import { CreateCustomerDTO, UpdateCustomerDTO, CustomerPaginationParams } from '../types/customer';
+import { Decimal } from '@prisma/client/runtime/library';
 
 export class CustomerModel {
     private prisma: PrismaClient;
@@ -13,9 +14,7 @@ export class CustomerModel {
         username: string, password: string
     ): Promise<customers | null> => {
         try {
-            const customer = await this.prisma.customers.findUnique({
-                where: { username }, // Ensure you're querying by username
-            });
+            const customer = await this.prisma.customers.findUnique({ where: { username } });
 
             if (!customer) {
                 throw new Error('Invalid username or password');
@@ -32,6 +31,72 @@ export class CustomerModel {
             throw error;
         }
     }
+
+    getNewCustomersCount = async (since: Date): Promise<number> => {
+        return await this.prisma.customers.count({
+            where: {
+                created_at: {
+                    gte: since
+                }
+            }
+        });
+    };
+
+    getCustomerBalance = async (customerId: string): Promise<number> => {
+        // Verify that the customer exists
+        const customerExists = await this.prisma.customers.findUnique({
+            where: { customer_id: customerId },
+            select: { customer_id: true },
+        });
+
+        if (!customerExists) {
+            throw new Error('Customer not found');
+        }
+
+        // Fetch all account balances
+        const accounts = await this.prisma.accounts.findMany({
+            where: { customer_id: customerId },
+            select: { balance: true },
+        });
+
+        // Sum the balances by converting Decimal to number
+        const totalBalance = accounts.reduce((sum, account) => {
+            // Convert Decimal to number
+            const accountBalance = account.balance.toNumber();
+            return sum + accountBalance;
+        }, 0);
+
+        return totalBalance;
+    }
+
+    getCustomersByMonth = async () => {
+        return await this.prisma.$queryRaw`
+            SELECT 
+                DATE_TRUNC('month', created_at) as month,
+                COUNT(*) as count
+            FROM customers
+            GROUP BY DATE_TRUNC('month', created_at)
+            ORDER BY month ASC
+        `;
+    };
+
+    count = async (dateFilter?: {
+        startDate?: Date;
+        endDate?: Date;
+    }): Promise<number> => {
+        if (!dateFilter) {
+            return await this.prisma.customers.count();
+        }
+
+        return await this.prisma.customers.count({
+            where: {
+                created_at: {
+                    gte: dateFilter.startDate,
+                    lte: dateFilter.endDate,
+                }
+            }
+        });
+    };
 
     createCustomer = async (
         customerData: CreateCustomerDTO
@@ -56,9 +121,10 @@ export class CustomerModel {
 
     getAllCustomers = async (
         params: CustomerPaginationParams
-    ): Promise<customers[]> => {
+    ): Promise<{ customers: customers[]; total: number }> => {
         try {
-            return await this.prisma.customers.findMany({
+            // Let's check what we're getting from Prisma
+            const customers = await this.prisma.customers.findMany({
                 include: {
                     accounts: true,
                     beneficiaries: true,
@@ -67,6 +133,10 @@ export class CustomerModel {
                 take: params.pageSize,
                 orderBy: { name: 'asc' },
             });
+
+            const total = await this.prisma.customers.count();
+
+            return { customers, total };
         } catch (error) {
             console.error('Error fetching customers:', error);
             throw error;

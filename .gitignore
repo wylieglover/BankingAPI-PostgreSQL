@@ -7,7 +7,7 @@ yarn-error.log
 # TypeScript
 *.tsbuildinfo
 dist
-
+src/server/dist
 # Environment variables
 .env
 
@@ -17,7 +17,6 @@ dist
 # Prisma
 src/server/prisma/.env
 src/server/prisma/migrations/
-
 # Logs
 src/server/logs
 *.log

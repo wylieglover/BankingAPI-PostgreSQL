@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import { TransactionModel } from '../models/TransactionModel';
 import { PrismaClient, transaction_type } from '@prisma/client';
 import { CreateTransactionDTO, UpdateTransactionDTO, TransactionPaginationParams } from '../types/transaction';
-
 import { errorResponse, successResponse } from '../middleware/authMiddleware';
 
 export class TransactionController {
@@ -37,6 +36,50 @@ export class TransactionController {
             next(error);
         }
     };
+
+    getTransactionAnalytics = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> => {
+        try {
+            const [
+                transactionVolumeByDay,
+                transactionsByType,
+                averageTransactionAmount
+            ] = await Promise.all([
+                this.transactionModel.getTransactionVolumeByDay(),
+                this.transactionModel.getTransactionTypeDistribution(),
+                this.transactionModel.getAverageTransactionAmount()
+            ]);
+
+            successResponse(res, 'Transaction analytics retrieved', {
+                transactionVolumeByDay,
+                transactionsByType,
+                averageTransactionAmount
+            });
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    getCustomerCount = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> => {
+        try {
+            const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+            const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+
+            const dateFilter = startDate || endDate ? { startDate, endDate } : undefined;
+            const transactionsCount = await this.transactionModel.count(dateFilter);
+
+            successResponse(res, 'Transactions count retrieved', { count: transactionsCount });
+        } catch (error) {
+            next(error);
+        }
+    }
 
     getAllTransactionsController = async (
         req: Request,

@@ -1,19 +1,29 @@
 services:
-  web:
-    container_name: banking-app
+  server:
+    container_name: banking-app-server
     restart: unless-stopped
     build:
-      context: ..
+      context: ../src/server/
       dockerfile: docker/Dockerfile
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_IP}:5432/${DB_NAME}?schema=${DB_SCHEMA}
-      - DB_SCHEMA=${DB_SCHEMA}
-      - PORT=${PORT}
-      - JWT_SECRET=${JWT_SECRET}
     ports:
       - "3001:3001"
     volumes:
-      - .:/usr/src/app
+      - ./src/server:/usr/src/app
       - /usr/src/app/node_modules
-    command: sh -c "npm run prisma:pull && npm start"
+    command: sh -c "npm run prisma:pull && npm start
+  client:
+    container_name: banking-app-client
+    restart: unless-stopped
+    build:
+      context: ../src/client/
+      dockerfile: docker/Dockerfile
+    environment:
+      - NODE_ENV=production
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./src/client:/usr/src/app
+      - /usr/src/app/node_modules
+    command: sh -c "npm start"

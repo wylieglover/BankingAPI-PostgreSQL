@@ -34,7 +34,9 @@ winston.addColors(logLevels.colors);
 
 // Define the log format
 const logFormat = format.combine(
-    format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    format.timestamp({
+        format: () => new Date().toISOString(),
+    }),
     format.errors({ stack: true }), // Include stack trace
     format.splat(),
     format.json() // Output logs in JSON format

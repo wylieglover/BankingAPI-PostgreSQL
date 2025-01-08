@@ -1,5 +1,7 @@
 import { PrismaClient, accounts } from '@prisma/client';
 import { CreateAccountDTO, UpdateAccountDTO, AccountPaginationParams } from '../types/account';
+import { error } from 'console';
+import { successResponse } from '@middleware/authMiddleware';
 
 export class AccountModel {
     private prisma: PrismaClient;
@@ -34,13 +36,76 @@ export class AccountModel {
         }
     }
 
+    getAccountTypeDistribution = async () => {
+        const distribution = await this.prisma.accounts.groupBy({
+            by: ['type'],
+            _count: {
+                type: true,
+            },
+        });
+
+        return distribution.map((entry) => ({
+            type: entry.type,
+            count: entry._count.type,
+        }));
+    };
+
+
+    getAverageAccountsPerCustomer = async () => {
+        const result = await this.prisma.accounts.groupBy({
+            by: ['customer_id'],
+            _count: {
+                customer_id: true,
+            },
+        });
+
+        const totalAccounts = result.reduce((sum, entry) => sum + entry._count.customer_id, 0);
+        const totalCustomers = result.length;
+
+        return totalCustomers === 0 ? 0 : totalAccounts / totalCustomers;
+    };
+
+    getAccountGrowthByMonth = async () => {
+        const results = await this.prisma.$queryRaw<{ month: Date; count: number }[]>`
+            SELECT
+                DATE_TRUNC('month', created_at) as month,
+                COUNT(*) as count
+            FROM accounts
+            GROUP BY DATE_TRUNC('month', created_at)
+            ORDER BY month DESC;
+        `;
+
+        return results.map((row: { month: Date; count: number }) => ({
+            month: row.month,
+            count: row.count,
+        }));
+    };
+
+    count = async (dateFilter?: {
+        startDate?: Date;
+        endDate?: Date;
+    }): Promise<number> => {
+        if (!dateFilter) {
+            return await this.prisma.accounts.count();
+        }
+
+        return await this.prisma.accounts.count({
+            where: {
+                created_at: {
+                    gte: dateFilter.startDate,
+                    lte: dateFilter.endDate,
+                }
+            }
+        });
+    };
+
     getAllAccounts = async (
         params: AccountPaginationParams
     ): Promise<accounts[]> => {
         try {
             return await this.prisma.accounts.findMany({
                 where: params.customerId ? { customer_id: params.customerId } : {},
-                include: { customers: true },
+                include: { transactions: true },
                 skip: (params.page - 1) * params.pageSize,
                 orderBy: { balance: 'asc' },
             });
@@ -54,9 +119,10 @@ export class AccountModel {
         accountId: string
     ): Promise<accounts | null> => {
         try {
+            console.error(accountId)
             return await this.prisma.accounts.findUnique({
-                where: { account_id: accountId },
-                include: { customers: true },
+                where: { account_id: "urn:uuid:" + accountId },
+                include: { transactions: true },
             });
         } catch (error) {
             console.error('Error fetching account by accountId:', error);

@@ -1,10 +1,8 @@
-import { AuthService, JWT_SECRET } from './AuthService';
 import { account_type, transaction_type } from '../prisma';
 import { Request, Response, NextFunction } from 'express';
 import { body, validationResult, ValidationError, ValidationChain, param } from 'express-validator';
-import { Logger } from './Logger';
-
-const authService = new AuthService(JWT_SECRET);
+import { Logger } from './utils/Logger';
+import { authService } from './services/AuthService';
 
 export const authenticate = (
     req: Request,
@@ -13,34 +11,45 @@ export const authenticate = (
 ): void => {
     try {
         const authHeader = req.headers.authorization;
+
         if (!authHeader) {
-            Logger.warn('Authentication header missing');
-            res.status(401).json({ error: 'Authentication required' });
+            Logger.warn(`Authentication header missing for request: ${req.method} ${req.originalUrl}`);
+            errorResponse(res, 'Authentication required', 401);
             return;
         }
 
         const token = authHeader.split(' ')[1];
         if (!token) {
-            Logger.warn('Token not provided in authorization header');
-            res.status(401).json({ error: 'Token not provided' });
+            Logger.warn(`Token not provided in authorization header for request: ${req.method} ${req.originalUrl}`);
+            errorResponse(res, 'Token not provided', 401);
             return;
         }
 
-        const decoded = authService.verifyToken(token);
-
-        if (typeof decoded === 'string') {
-            Logger.error('Decoded token was a string, expected object');
-            res.status(401).json({ error: 'Invalid token format' });
-            return;
-        }
-
+        const decoded = authService.verifyToken;
         req.user = decoded;
+
         next();
     } catch (error) {
-        Logger.error('Authentication error: %s', (error as Error).message);
+        Logger.error('Authentication error:', (error as Error).message);
         res.status(401).json({ error: 'Invalid or expired token' });
     }
 };
+
+export const loginValidationRules = [
+    body('username')
+        .trim()
+        .notEmpty()
+        .withMessage('Username is required')
+        .isString()
+        .withMessage('Username must be a string'),
+
+    body('password')
+        .trim()
+        .notEmpty()
+        .withMessage('Password is required')
+        .isString()
+        .withMessage('Password must be a string'),
+];
 
 export const createCustomerRules: ValidationChain[] = [
     body('name')
@@ -220,6 +229,10 @@ export const updateTransactionRules: ValidationChain[] = [
         .withMessage('Amount must be a positive number'),
 ];
 
+function bigIntReplacer(key: string, value: any) {
+    return typeof value === 'bigint' ? value.toString() : value;
+}
+
 export function successResponse<T>(
     res: Response,
     message: string,
@@ -238,7 +251,7 @@ export function successResponse<T>(
     return res
         .status(statusCode)
         .type('application/json')
-        .send(JSON.stringify(payload, null, 2));
+        .send(JSON.stringify(payload, bigIntReplacer, 2));
 }
 
 export function errorResponse(
@@ -259,7 +272,7 @@ export function errorResponse(
     return res
         .status(statusCode)
         .type('application/json')
-        .send(JSON.stringify(payload, null, 2));
+        .send(JSON.stringify(payload, bigIntReplacer, 2));
 }
 
 export const validate = (validations: ValidationChain[]) => {

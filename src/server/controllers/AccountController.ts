@@ -57,6 +57,55 @@ export class AccountController {
         }
     }
 
+    getAccountAnalytics = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> => {
+        try {
+            const [
+                accountTypeDistribution,
+                averageAccountsPerCustomer,
+                accountGrowthByMonth
+            ] = await Promise.all([
+                this.accountModel.getAccountTypeDistribution(),
+                this.accountModel.getAverageAccountsPerCustomer(),
+                this.accountModel.getAccountGrowthByMonth()
+            ]);
+
+            successResponse(res, 'Account analytics retrieved', {
+                accountTypeDistribution,
+                averageAccountsPerCustomer,
+                accountGrowthByMonth
+            });
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    getAccountCount = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> => {
+        try {
+            const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+            const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+
+            if ((startDate && isNaN(startDate.getTime())) || (endDate && isNaN(endDate.getTime()))) {
+                errorResponse(res, 'Invalid date format', 400);
+                return;
+            }
+
+            const dateFilter = startDate || endDate ? { startDate, endDate } : undefined;
+            const accountsCount = await this.accountModel.count(dateFilter);
+
+            successResponse(res, 'Accounts count retrieved', { count: accountsCount });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     getAllAccountsController = async (
         req: Request,
         res: Response,

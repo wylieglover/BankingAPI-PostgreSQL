@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { CustomerModel } from '../models/CustomerModel';
 import { PrismaClient } from '@prisma/client';
-import jwt from 'jsonwebtoken';
 import {
     CreateCustomerDTO,
-    UpdateCustomerDTO,
-    CustomerPaginationParams,
+    UpdateCustomerDTO
 } from '../types/customer';
 import { successResponse, errorResponse } from '../middleware/authMiddleware';
+import { validationResult } from 'express-validator';
+import { authService } from '../middleware/services/AuthService';
 
 export class CustomerController {
     private customerModel: CustomerModel;
@@ -23,11 +23,17 @@ export class CustomerController {
     ): Promise<void> => {
         try {
             const customerData: CreateCustomerDTO = req.body;
-
             const customer = await this.customerModel.createCustomer(customerData);
             customer.password = '';
 
-            successResponse(res, 'Customer created', customer, 201);
+            const token = authService.signToken({
+                customer_id: customer.customer_id
+            });
+
+            successResponse(res, 'Customer created', {
+                customer: customer,
+                token,
+            }, 201);
         } catch (error) {
             next(error);
         }
@@ -35,6 +41,12 @@ export class CustomerController {
 
     login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                errorResponse(res, 'Validation failed', 400);
+                return;
+            }
+
             const { username, password } = req.body;
 
             if (!username || !password) {
@@ -49,11 +61,87 @@ export class CustomerController {
                 return;
             }
 
-            successResponse(res, 'Login successful', { customer }, 200);
+            const token = authService.signToken({
+                customer_id: customer.customer_id
+            });
+
+            successResponse(
+                res,
+                'Login successful',
+                {
+                    customer: customer,
+                    token,
+                },
+                200
+            );
         } catch (error) {
             next(error);
         }
     };
+
+    getCustomerAnalytics = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> => {
+        try {
+            const [
+                totalCount,
+                newCustomersThisMonth,
+                customersByMonth
+            ] = await Promise.all([
+                this.customerModel.count(),
+                this.customerModel.getNewCustomersCount(new Date(new Date().setMonth(new Date().getMonth() - 1))),
+                this.customerModel.getCustomersByMonth()
+            ]);
+
+            successResponse(res, 'Customer analytics retrieved', {
+                totalCount,
+                newCustomersThisMonth,
+                customersByMonth
+            });
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    getCustomerBalanceController = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> => {
+        try {
+            const { customerId } = req.params;
+
+            if (!customerId) {
+                errorResponse(res, 'Customer ID is required', 400);
+                return;
+            }
+
+            const balance = await this.customerModel.getCustomerBalance(customerId);
+            successResponse(res, 'Customer balance retrieved', Number(balance), 200);
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    getCustomerCount = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> => {
+        try {
+            const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+            const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+
+            const dateFilter = startDate || endDate ? { startDate, endDate } : undefined;
+            const customersCount = await this.customerModel.count(dateFilter);
+
+            successResponse(res, 'Customers count retrieved', { count: customersCount });
+        } catch (error) {
+            next(error);
+        }
+    }
 
     getAllCustomersController = async (
         req: Request,
@@ -63,20 +151,23 @@ export class CustomerController {
         try {
             const page = parseInt(req.query.page as string, 10) || 1;
             const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
-
-            const customers = await this.customerModel.getAllCustomers({ page, pageSize });
-
-            if (customers.length === 0) {
-                errorResponse(res, 'No customers found', 404);
-                return;
-            }
+            req.params.pa
+            const { customers, total } = await this.customerModel.getAllCustomers({ page, pageSize });
 
             const sanitizedCustomers = customers.map((c) => ({
                 ...c,
                 password: undefined,
             }));
 
-            successResponse(res, 'Customers retrieved', sanitizedCustomers);
+            successResponse(res, 'Customers retrieved', {
+                data: sanitizedCustomers,
+                meta: {
+                    total,
+                    page,
+                    pageSize,
+                    totalPages: Math.ceil(total / pageSize)
+                }
+            });
         } catch (error) {
             next(error);
         }

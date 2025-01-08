@@ -1,48 +1,32 @@
 {
-  "name": "banking-app",
-  "version": "1.0.0",
-  "main": "server/dist/app.js",
-  "scripts": {
-    "start": "TS_NODE_PROJECT=./config/tsconfig.json node -r tsconfig-paths/register dist/server/app.js",
-    "clean": "rm -rf dist",
-    "build": "npm run clean && tsc -p ./config/tsconfig.json",
-    "prisma:pull": "prisma db pull",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "dev": "TS_NODE_PROJECT=./config/tsconfig.json tsx -r tsconfig-paths/register src/server/app.ts"
-  },
-  "keywords": [],
-  "author": "Wylie G",
-  "license": "ISC",
-  "type": "commonjs",
-  "description": "Banking API System",
-  "prisma": {
-    "schema": "./src/server/prisma/schema.prisma"
-  },
-  "dependencies": {
-    "@prisma/client": "^6.1.0",
-    "bcrypt": "^5.1.1",
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "express-validator": "^7.2.1",
-    "helmet": "^8.0.0",
-    "jsonwebtoken": "^9.0.2",
-    "morgan": "^1.10.0",
-    "pg": "^8.13.1",
-    "prisma": "^6.1.0",
-    "tsconfig-paths": "^4.2.0",
-    "winston": "^3.17.0",
-    "winston-daily-rotate-file": "^5.0.0"
-  },
-  "devDependencies": {
-    "@types/bcrypt": "^5.0.2",
-    "@types/dotenv": "^6.1.1",
-    "@types/express": "^5.0.0",
-    "@types/helmet": "^0.0.48",
-    "@types/jsonwebtoken": "^9.0.7",
-    "@types/morgan": "^1.9.9",
-    "@types/node": "^22.10.2",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
-  }
+    "name": "banking-app",
+    "version": "1.0.0",
+    "private": true,
+    "workspaces": [
+        "src/server",
+        "src/client"
+    ],
+    "scripts": {
+        "install:all": "npm install --workspaces",
+        "install:server": "npm install --prefix src/server",
+        "install:client": "npm install --prefix src/client",
+        "start": "npm run start:server & npm run start:client",
+        "build": "npm run build:server && npm run build:client",
+        "dev": "npm run dev:server & npm run dev:client",
+        "start:server": "npm --prefix src/server run start",
+        "build:server": "npm --prefix src/server run build",
+        "dev:server": "npm --prefix src/server run dev",
+        "start:client": "npm --prefix src/client run start",
+        "build:client": "npm --prefix src/client run build",
+        "dev:client": "npm --prefix src/client run dev",
+        "clean": "npm run clean:server && npm run clean:client",
+        "clean:server": "npm --prefix src/server run clean",
+        "clean:client": "npm --prefix src/client run clean",
+        "prisma:pull": "npm --prefix src/server run prisma:pull",
+        "prisma:generate": "npm --prefix src/server run prisma:generate",
+        "prisma:migrate": "npx prisma migrate dev --schema=src/server/prisma/schema.prisma"
+    },
+    "dependencies": {
+        "@shadcn/ui": "^0.0.4"
+    }
 }

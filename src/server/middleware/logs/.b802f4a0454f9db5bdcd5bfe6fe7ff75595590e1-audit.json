@@ -1,0 +1,30 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 30
+    },
+    "auditLog": "/home/wylie/banking-app/src/server/middleware/logs/.b802f4a0454f9db5bdcd5bfe6fe7ff75595590e1-audit.json",
+    "files": [
+        {
+            "date": 1735972016820,
+            "name": "/home/wylie/banking-app/src/server/middleware/logs/error-2025-01-04.log",
+            "hash": "71d4b00cb977784034096a4578fa998a3724f573df918fa22b80b019a298ef05"
+        },
+        {
+            "date": 1736126442870,
+            "name": "/home/wylie/banking-app/src/server/middleware/logs/error-2025-01-05.log",
+            "hash": "da5a0e436ce3a79a9207781b110cef3973bf81c02c638c9e641524217f5b9461"
+        },
+        {
+            "date": 1736219725872,
+            "name": "/home/wylie/banking-app/src/server/middleware/logs/error-2025-01-06.log",
+            "hash": "389072d52b1f8f30475748a150328436af7478dc6447339e5bad4b2e622e3c40"
+        },
+        {
+            "date": 1736232442778,
+            "name": "/home/wylie/banking-app/src/server/middleware/logs/error-2025-01-07.log",
+            "hash": "b8900d7984ba62b428a2c73fd06b8b4c8473771a9d8858d9904e45804baf2b2a"
+        }
+    ],
+    "hashType": "sha256"
+}
