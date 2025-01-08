@@ -1,5 +1,5 @@
 services:
-  server:
+  banking-app-server:
     container_name: banking-app-server
     restart: unless-stopped
     build:
@@ -13,7 +13,7 @@ services:
       - ./src/server:/usr/src/app
       - /usr/src/app/node_modules
     command: sh -c "npm run prisma:pull && npm start
-  client:
+  banking-app-client:
     container_name: banking-app-client
     restart: unless-stopped
     build:

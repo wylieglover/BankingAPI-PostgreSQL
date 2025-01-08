@@ -6,7 +6,7 @@ WORKDIR /usr/src/server
 
 # Copy server-specific package files and install dependencies
 COPY package*.json ./
-RUN npm install --only=development
+RUN npm install
 
 # Copy the rest of the server code
 COPY . ./

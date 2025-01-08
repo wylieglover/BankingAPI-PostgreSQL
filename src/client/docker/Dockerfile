@@ -3,7 +3,7 @@ FROM node:18-alpine
 WORKDIR /usr/src/client
 
 COPY package*.json ./
-RUN npm install --only=development
+RUN npm install
 
 COPY . ./
 
