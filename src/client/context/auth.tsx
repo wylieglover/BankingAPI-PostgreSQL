@@ -31,6 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         const initializeAuth = async () => {
             try {
+                if (typeof window === 'undefined') return;
                 const token = localStorage.getItem('authToken');
                 const storedCustomer = localStorage.getItem('customer');
 
@@ -71,13 +72,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
-    const logout = () => {
+    const logout = (redirectCallback = () => router.push('/login')) => {
         clearAuth();
-        router.push('/login');
+        setIsLoading(false);
+        redirectCallback();
     };
 
     if (isLoading) {
-        return <div>Loading...</div>; // Or your loading component
+        return <div>Loading...</div>;
     }
 
     return (

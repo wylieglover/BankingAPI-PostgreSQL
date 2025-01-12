@@ -6,10 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from '@/context/auth';
-import { Loader2, Bell, Shield, User, Mail } from 'lucide-react';
+import { Loader2, Bell, Shield, User } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import api from '@/lib/api';
+import axios from 'axios';
 
 interface UserSettings {
     profile: {
@@ -28,8 +30,7 @@ interface UserSettings {
         lastPasswordChange: string;
     };
 }
-
-export default function SettingsPage() {
+const SettingsPage = () => {
     const { user } = useAuth();
     const [settings, setSettings] = useState<UserSettings>({
         profile: {
@@ -73,40 +74,49 @@ export default function SettingsPage() {
         try {
             await api.put('/users/settings/profile', settings.profile);
             // Show success message
-        } catch (err) {
-            setError('Failed to update profile');
+        } catch (err: unknown) {
+            if (axios.isAxiosError(err)) {
+                const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch customers';
+                setError(errorMessage);
+            } else {
+                setError('An unexpected error occurred');
+            }
         } finally {
             setSaving(false);
+            console.log(loading)
         }
     };
 
-    const handleNotificationUpdate = async (key: keyof typeof settings.notifications) => {
-        const newSettings = {
-            ...settings,
-            notifications: {
-                ...settings.notifications,
-                [key]: !settings.notifications[key]
-            }
-        };
+    // const handleNotificationUpdate = async (key: keyof typeof settings.notifications) => {
+    //     const newSettings = {
+    //         ...settings,
+    //         notifications: {
+    //             ...settings.notifications,
+    //             [key]: !settings.notifications[key]
+    //         }
+    //     };
 
-        setSettings(newSettings);
+    //     setSettings(newSettings);
+    //     try {
+    //         await api.put('/users/settings/notifications', newSettings.notifications);
+    //     } catch (err: unknown) {
+    //         if (axios.isAxiosError(err)) {
+    //             const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch customers';
+    //             setSettings(settings)
+    //             setError(errorMessage);
+    //         } else {
+    //             setSettings(settings)
+    //             setError('An unexpected error occurred');
+    //         }
+    //     };
 
-        try {
-            await api.put('/users/settings/notifications', newSettings.notifications);
-        } catch (err) {
-            setError('Failed to update notification settings');
-            // Revert on failure
-            setSettings(settings);
-        }
-    };
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <Loader2 className="h-6 w-6 animate-spin" />
-            </div>
-        );
-    }
+    //     if (loading) {
+    //         return (
+    //             <div className="flex items-center justify-center min-h-screen">
+    //                 <Loader2 className="h-6 w-6 animate-spin" />
+    //             </div>
+    //         );
+    //     }
 
     return (
         <div className="container mx-auto px-4 py-6">
@@ -216,10 +226,10 @@ export default function SettingsPage() {
                                         Receive email notifications about account activity
                                     </p>
                                 </div>
-                                <Switch
+                                {/* <Switch
                                     checked={settings.notifications.emailAlerts}
                                     onCheckedChange={() => handleNotificationUpdate('emailAlerts')}
-                                />
+                                /> */}
                             </div>
                             <div className="flex items-center justify-between">
                                 <div className="space-y-0.5">
@@ -228,10 +238,10 @@ export default function SettingsPage() {
                                         Get text messages for important updates
                                     </p>
                                 </div>
-                                <Switch
+                                {/* <Switch
                                     checked={settings.notifications.smsAlerts}
                                     onCheckedChange={() => handleNotificationUpdate('smsAlerts')}
-                                />
+                                /> */}
                             </div>
                             <div className="flex items-center justify-between">
                                 <div className="space-y-0.5">
@@ -240,10 +250,10 @@ export default function SettingsPage() {
                                         Receive news about products and features
                                     </p>
                                 </div>
-                                <Switch
+                                {/* <Switch
                                     checked={settings.notifications.marketingEmails}
                                     onCheckedChange={() => handleNotificationUpdate('marketingEmails')}
-                                />
+                                /> */}
                             </div>
                         </CardContent>
                     </Card>
@@ -277,7 +287,15 @@ export default function SettingsPage() {
                         </CardContent>
                     </Card>
                 </TabsContent>
+                {error && (
+                    <Alert variant="destructive">
+                        <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                )}
             </Tabs>
         </div>
     );
 }
+
+
+export default SettingsPage;

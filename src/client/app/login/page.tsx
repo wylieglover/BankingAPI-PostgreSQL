@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import Button from '@/components/ui/login-button';
 import { useAuth } from '@/context/auth';
 import axios from 'axios';
+import { decodeToken } from '@/context/authUtils';
 
 const LoginPage = () => {
     const [formData, setFormData] = useState({
@@ -44,11 +45,13 @@ const LoginPage = () => {
             const response = await api.post('/customers/login', formData);
             const { customer, token } = response.data.data;
 
-            if (!token) throw new Error('No token received from server');
-            if (!customer) throw new Error('No customer data received from server');
+            const decoded = decodeToken(token);
+            if (!decoded || !decoded.customer_id) {
+                throw new Error('Invalid token: customer_id is missing');
+            }
 
             login(token, customer);
-            router.push(redirectTo);
+            router.push(redirectTo || '/');
         } catch (err: unknown) {
             if (axios.isAxiosError(err)) {
                 const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch customers';
