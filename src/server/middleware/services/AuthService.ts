@@ -1,57 +1,47 @@
 import { CustomJwtPayload } from '../../types/jwt-types';
 import jwt from 'jsonwebtoken';
-import { Logger } from '../utils/Logger';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
 
 export class AuthService {
     private secret: string;
+    private refreshSecret: string;
 
-    constructor(secret: string) {
-        if (!secret) {
-            throw new Error('JWT_SECRET is not defined');
+    constructor(secret: string, refreshSecret: string) {
+        if (!secret || !refreshSecret) {
+            throw new Error('JWT_SECRET or JWT_REFRESH_SECRET is not defined');
         }
         this.secret = secret;
+        this.refreshSecret = refreshSecret;
+    }
+
+    decodeToken(token: string): CustomJwtPayload {
+        return jwt.decode(token) as CustomJwtPayload;
+    }
+
+    signToken(payload: { customer_id: string;[key: string]: any }, expiresIn = '15m'): string {
+        return jwt.sign(payload, this.secret, { expiresIn });
     }
 
     verifyToken(token: string): CustomJwtPayload {
         try {
-            // Log token details before verification
-            const decoded = jwt.decode(token) as any;
-            Logger.debug('Verifying token:', {
-                iat: decoded?.iat ? new Date(decoded.iat * 1000).toISOString() : null,
-                exp: decoded?.exp ? new Date(decoded.exp * 1000).toISOString() : null,
-                current: new Date().toISOString()
-            });
-
             return jwt.verify(token, this.secret) as CustomJwtPayload;
         } catch (error) {
-            Logger.error('Token verification failed:', {
-                error: (error as Error).message,
-                type: error?.constructor.name
-            });
-            throw error;
+            throw new Error('Token is invalid or expired');
         }
     }
 
-    signToken(payload: { customer_id: string }): string {
-        const token = jwt.sign(
-            payload,
-            this.secret,
-            { expiresIn: '24h' }  // Extended for testing
-        );
+    signRefreshToken(payload: { customer_id: string }, expiresIn = '7d'): string {
+        return jwt.sign(payload, this.refreshSecret, { expiresIn });
+    }
 
-        // Log token creation details
-        const decoded = jwt.decode(token) as any;
-        Logger.debug('Token created:', {
-            customer_id: payload.customer_id,
-            iat: new Date(decoded.iat * 1000).toISOString(),
-            exp: new Date(decoded.exp * 1000).toISOString()
-        });
-
-        return token;
+    verifyRefreshToken(token: string): any {
+        return jwt.verify(token, this.refreshSecret);
     }
 }
 
-export const authService = new AuthService(process.env.JWT_SECRET || '');
+export const authService = new AuthService(
+    process.env.JWT_SECRET || '',
+    process.env.JWT_REFRESH_SECRET || ''
+);
