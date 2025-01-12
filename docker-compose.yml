@@ -1,0 +1,31 @@
+services:
+  banking-app-server:
+    container_name: banking-app-server
+    image: myserver:latest
+    restart: unless-stopped
+    env_file:
+      - ./src/server/.env
+    build:
+      context: ./src/server/
+      dockerfile: docker/Dockerfile
+    ports:
+      - "3001:3001"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3001" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  banking-app-client:
+    container_name: banking-app-client
+    restart: unless-stopped
+    env_file:
+      - ./src/client/.env
+    build:
+      context: ./src/client/
+      dockerfile: docker/Dockerfile
+    ports:
+      - "3002:3002"
+    depends_on:
+      banking-app-server:
+        condition: service_healthy

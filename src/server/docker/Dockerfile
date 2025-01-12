@@ -1,24 +1,28 @@
-# Use Node.js LTS version as the base image
-FROM node:18-alpine
-
-# Set the working directory in the container
+FROM node:20 AS builder
 WORKDIR /usr/src/server
 
-# Copy server-specific package files and install dependencies
 COPY package*.json ./
+ENV NODE_ENV=development
 RUN npm install
 
-# Copy the rest of the server code
+COPY prisma ./prisma
 COPY . ./
-# Pull database schema and generate Prisma client
+
 RUN npm run prisma:pull
 RUN npm run prisma:generate
+RUN npm run build 
 
-# Compile TypeScript (if applicable)
-RUN npm run build
+# --- Production image ---
+FROM node:20 AS production
+WORKDIR /usr/src/server
 
-# Expose the server's port
-EXPOSE 3001
+COPY package*.json ./
+ENV NODE_ENV=production
+RUN npm install --omit=dev
 
-# Start the server
+COPY --from=builder /usr/src/server/node_modules/.prisma/client ./node_modules/.prisma/client
+COPY --from=builder /usr/src/server/node_modules/@prisma/client ./node_modules/@prisma/client
+COPY --from=builder /usr/src/server/dist ./dist
+COPY --from=builder /usr/src/server/prisma ./prisma
+
 CMD ["npm", "start"]

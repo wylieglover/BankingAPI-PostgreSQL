@@ -3,34 +3,34 @@ name: run-docker-compose
 on:
   push:
     branches:
-      - main 
+      - main
 
 jobs:
   deploy:
     runs-on: self-hosted
     steps:
-      - name: Checkout the repo
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4.1.6
 
       - name: Create server .env file
         run: |
-          echo "DB_USER=${{ secrets.DB_USER }}" > ./src/server/.env
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> ./src/server/.env
-          echo "DB_IP=${{ secrets.DB_IP }}" >> ./src/server/.env
-          echo "DB_NAME=${{ secrets.DB_NAME }}" >> ./src/server/.env
-          echo "DB_SCHEMA=${{ secrets.DB_SCHEMA }}" >> ./src/server/.env
-          echo "PORT=${{ secrets.PORT }}" >> ./src/server/.env
-          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ./src/server/.env
-          echo "NODE_ENV=production" >> ./src/server/.env
-          echo "DATABASE_URL=postgresql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.DB_IP }}:5432/${{ secrets.DB_NAME }}?schema=${{ secrets.DB_SCHEMA }}" >> ./src/server/.env
-          echo "Server .env file created:"
-          cat ./src/server/.env
+          cat << EOF > ./src/server/.env
+          PORT=${{secrets.SERVER_PORT}}
+          SERVER_IP=${{secrets.SERVER_IP}}
+          CLIENT_PORT=${{secrets.CLIENT_PORT}}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          JWT_REFRESH_SECRET=${{secrets.JWT_REFRESH_SECRET}}
+          DATABASE_URL=postgresql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.DB_IP }}:5432/${{ secrets.DB_NAME }}?schema=${{ secrets.DB_SCHEMA }}
+          NODE_ENV=production
+          EOF
 
       - name: Create client .env file
         run: |
-          echo "NEXT_PUBLIC_API_BASE_URL=${{ secrets.NEXT_PUBLIC_API_BASE_URL }}" > ./src/client/.env
-          echo "NODE_ENV=production" >> ./src/client/.env
-          echo "Client .env file created:"
-          cat ./src/client/.env
+          cat << EOF > ./src/client/.env
+          NEXT_PUBLIC_API_BASE_URL=${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
+          PORT=${{secrets.CLIENT_PORT}}
+          NEXT_TELEMETRY_DISABLED=1
+          EOF
+
       - name: Run Docker Compose
-        run: docker compose -f ./docker/docker-compose.yml up -d --force-recreate --build
+        run: docker compose -f docker-compose.yml up -d --force-recreate --build
