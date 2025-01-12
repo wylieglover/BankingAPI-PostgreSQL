@@ -1,5 +1,9 @@
 # BankingAPI-PostgreSQL
 
+[![run-docker-compose](https://github.com/wylieglover/BankingAPI-PostgreSQL/actions/workflows/deploy.yml/badge.svg)](https://github.com/wylieglover/BankingAPI-PostgreSQL/actions/workflows/deploy.yml)
+
+![image](https://github.com/user-attachments/assets/6107bf1b-252f-478e-a76f-8866955d7a37)
+
 A robust banking API developed using TypeScript, Node.js, and PostgreSQL, designed to manage core banking operations securely and efficiently.
 
 ## Features
