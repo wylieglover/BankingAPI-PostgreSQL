@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { validate, createBeneficiaryRules, updateBeneficiaryRules } from '../middleware/authMiddleware';
+import { createBeneficiaryRules, updateBeneficiaryRules } from '../middleware/validationMiddleware';
+import { validate } from '../middleware/authMiddleware';
 import { BeneficiaryController } from '../controllers/BeneficiaryController';
 import { prisma } from '../prisma';
 

@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { TransactionController } from '../controllers/TransactionController';
 import { prisma } from '../prisma';
-import { validate, createTransactionRules, updateTransactionRules } from '../middleware/authMiddleware';
+import { createTransactionRules, updateTransactionRules } from '../middleware/validationMiddleware';
+import { validate } from '../middleware/authMiddleware';
 
 const router = Router({ mergeParams: true });
 const transactionController = new TransactionController(prisma);

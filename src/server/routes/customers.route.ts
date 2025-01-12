@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { prisma } from '../prisma';
 import { CustomerController } from '../controllers/CustomerController';
-import { authenticate, createCustomerRules, updateCustomerRules, validate, loginValidationRules } from '../middleware/authMiddleware';
+import { createCustomerRules, updateCustomerRules, loginValidationRules } from '../middleware/validationMiddleware';
+import { authenticate, validate, apiLimiter } from '../middleware/authMiddleware';
 import accountRoutes from './accounts.route';
 import beneficiaryRoutes from './beneficiaries.route';
 
@@ -9,8 +10,8 @@ const router = Router();
 const customerController = new CustomerController(prisma);
 
 // Public routes
-router.post('/signup', validate(createCustomerRules), customerController.createCustomerController); // POST /customers/signup
-router.post('/login', validate(loginValidationRules), customerController.login); // POST /customers/login
+router.post('/signup', apiLimiter, validate(createCustomerRules), customerController.createCustomerController); // POST /customers/signup
+router.post('/login', apiLimiter, validate(loginValidationRules), customerController.login); // POST /customers/login
 
 // Protected routes
 router.get('/', authenticate, customerController.getAllCustomersController); // GET /customers
