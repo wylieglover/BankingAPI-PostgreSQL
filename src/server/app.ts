@@ -8,17 +8,21 @@ import cors from 'cors';
 
 dotenv.config();
 
-if (!process.env.PORT) {
+if (!process.env.PORT || !process.env.CLIENT_PORT || !process.env.SERVER_IP) {
     process.exit(1);
 }
 
 class App {
     public app: Application;
     public port: number;
+    public client_port: number;
+    public server_ip: string;
 
-    constructor(port: number) {
+    constructor(port: number, client_port: number, server_ip: string) {
         this.app = express();
         this.port = port;
+        this.client_port = client_port;
+        this.server_ip = server_ip;
 
         this.initializeMiddlewares();
         this.initializeRoutes();
@@ -31,12 +35,25 @@ class App {
         this.app.use(express.urlencoded({ extended: true }));
         this.app.use(morgan('combined', { stream }));
 
+        const whitelist = [
+            `http://localhost:${this.client_port}`,
+            `http://${this.server_ip}:${this.client_port}`,
+        ];
+
         this.app.use(
             cors({
-                origin: 'http://localhost:3000',
-                methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-                allowedHeaders: ['Authorization', 'Content-Type'],
-                credentials: true,
+                origin: (origin, callback) => {
+                    if (!origin || whitelist.includes(origin)) {
+                        // Allow requests with a matching origin or no origin (e.g., Postman)
+                        callback(null, true);
+                    } else {
+                        // Reject requests from disallowed origins
+                        callback(new Error(`CORS Error: Origin '${origin}' is not allowed by the server`));
+                    }
+                },
+                methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
+                allowedHeaders: ['Authorization', 'Content-Type'], // Allowed headers
+                credentials: true, // Allow credentials (cookies, Authorization header, etc.)
             })
         );
     }
@@ -44,26 +61,13 @@ class App {
     private initializeRoutes() {
         this.app.use('/api', routes);
         this.app.get('/', (req: Request, res: Response) => {
-            res.send('API is running');
+            res.status(200).json({ status: 'API is running' })
         });
     }
 
     private initializeErrorHandling() {
         this.app.use((err: any, req: Request, res: Response, next: NextFunction) => {
             Logger.error(`Primary Handler: ${err.message}`);
-
-            // Development-only error details (remove in production)
-            if (process.env.NODE_ENV === 'development') {
-                res.status(err.status || 500).json({
-                    error: err.message,
-                    stack: err.stack
-                });
-            } else {
-                // Production: Send generic error message
-                res.status(err.status || 500).json({
-                    error: 'Internal Server Error'
-                });
-            }
         });
     }
 
@@ -75,5 +79,8 @@ class App {
 }
 
 const PORT = parseInt(process.env.PORT);
-const server = new App(PORT);
+const CLIENT_PORT = parseInt(process.env.CLIENT_PORT);
+const SERVER_IP = process.env.SERVER_IP
+
+const server = new App(PORT, CLIENT_PORT, SERVER_IP);
 server.listen();
