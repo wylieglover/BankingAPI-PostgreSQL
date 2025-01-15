@@ -1,6 +1,6 @@
-import { JwtPayload } from 'jsonwebtoken';
+import { JwtPayload } from "jsonwebtoken";
 
 export interface CustomJwtPayload extends JwtPayload {
-    customer_id: string;
-    [key: string]: any;
+  customer_id: string;
+  [key: string]: any;
 }

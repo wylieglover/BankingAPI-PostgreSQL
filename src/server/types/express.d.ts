@@ -1,12 +1,11 @@
-import { CustomJwtPayload } from './jwt-types';
-
+import { CustomJwtPayload } from "./jwt-types";
 
 declare global {
-    namespace Express {
-        interface Request {
-            user?: CustomJwtPayload;
-        }
+  namespace Express {
+    interface Request {
+      user?: CustomJwtPayload;
     }
+  }
 }
 
-export { };
+export {};
