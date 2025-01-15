@@ -18,8 +18,6 @@ If you're not seeing the hooks work:
 2. If needed, manually set it:
     ```bash
    git config --local include.path ../.gitconfig
-
-   
 ## Features
 
 - **User Authentication**: Secure user login and registration utilizing JWT tokens.
