@@ -1,0 +1,26 @@
+name: Code Formatting Check
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-formatting:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4.1.6
+
+      - name: Install Prettier Globally
+        run: |
+          npm install -g prettier
+
+      - name: Check Code Formatting for Client
+        run: |
+          prettier --config src/client/.prettierrc --check "src/client/**/*.{js,ts,css,html}"
+  
+      - name: Check Code Formatting for Server
+        run: |
+          prettier --config src/server/.prettierrc --check "src/server/**/*.{js,ts,css,html}"
