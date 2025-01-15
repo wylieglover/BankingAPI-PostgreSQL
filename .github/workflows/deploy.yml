@@ -1,13 +1,13 @@
 name: run-docker-compose
 
 on:
-  push:
-    branches:
-      - main
   workflow_run:
     workflows: ["Code Formatting Check"]
     types:
       - completed
+  push:
+    branches:
+      - main
 
 jobs:
   deploy:
