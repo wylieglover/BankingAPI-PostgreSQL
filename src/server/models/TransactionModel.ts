@@ -1,9 +1,9 @@
-import { PrismaClient, transactions } from "@prisma/client";
+import { PrismaClient, transactions } from '@prisma/client';
 import {
   CreateTransactionDTO,
   UpdateTransactionDTO,
   TransactionPaginationParams,
-} from "../types/transaction";
+} from '../types/transaction';
 
 export class TransactionModel {
   private prisma: PrismaClient;
@@ -13,7 +13,7 @@ export class TransactionModel {
   }
 
   createTransaction = async (
-    data: CreateTransactionDTO,
+    data: CreateTransactionDTO
   ): Promise<transactions> => {
     try {
       const account = await this.prisma.accounts.findUnique({
@@ -25,7 +25,7 @@ export class TransactionModel {
       }
 
       if (data.amount <= 0) {
-        throw new Error("Transaction amount must be greater than zero.");
+        throw new Error('Transaction amount must be greater than zero.');
       }
 
       return await this.prisma.$transaction(async (prisma) => {
@@ -41,7 +41,7 @@ export class TransactionModel {
           where: { account_id: data.accountId },
           data: {
             balance: {
-              [data.type === "deposit" ? "increment" : "decrement"]:
+              [data.type === 'deposit' ? 'increment' : 'decrement']:
                 data.amount,
             },
           },
@@ -50,7 +50,7 @@ export class TransactionModel {
         return transaction;
       });
     } catch (error) {
-      console.error("Error creating transaction:", error);
+      console.error('Error creating transaction:', error);
       throw error;
     }
   };
@@ -67,7 +67,7 @@ export class TransactionModel {
 
   getTransactionTypeDistribution = async () => {
     const distribution = await this.prisma.transactions.groupBy({
-      by: ["type"],
+      by: ['type'],
       _count: {
         type: true,
       },
@@ -111,7 +111,7 @@ export class TransactionModel {
   };
 
   getAllTransactions = async (
-    params: TransactionPaginationParams,
+    params: TransactionPaginationParams
   ): Promise<transactions[]> => {
     try {
       const transactions = await this.prisma.transactions.findMany({
@@ -119,18 +119,18 @@ export class TransactionModel {
         include: { accounts: true },
         skip: (params.page - 1) * params.pageSize,
         take: params.pageSize,
-        orderBy: { amount: "asc" },
+        orderBy: { amount: 'asc' },
       });
 
       return transactions;
     } catch (error) {
-      console.error("Error fetching transactions:", error);
+      console.error('Error fetching transactions:', error);
       throw error;
     }
   };
 
   getTransactionById = async (
-    transactionId: number,
+    transactionId: number
   ): Promise<transactions | null> => {
     try {
       const transaction = await this.prisma.transactions.findUnique({
@@ -140,13 +140,13 @@ export class TransactionModel {
 
       return transaction;
     } catch (error) {
-      console.error("Error fetching transaction:", error);
+      console.error('Error fetching transaction:', error);
       throw error;
     }
   };
 
   updateTransaction = async (
-    updateData: UpdateTransactionDTO,
+    updateData: UpdateTransactionDTO
   ): Promise<transactions> => {
     try {
       const existingTransaction = await this.prisma.transactions.findUnique({
@@ -155,7 +155,7 @@ export class TransactionModel {
 
       if (!existingTransaction) {
         throw new Error(
-          `Transaction with ID ${updateData.transactionId} does not exist.`,
+          `Transaction with ID ${updateData.transactionId} does not exist.`
         );
       }
 
@@ -171,7 +171,7 @@ export class TransactionModel {
             where: { account_id },
             data: {
               balance: {
-                [oldType === "deposit" ? "decrement" : "increment"]: oldAmount,
+                [oldType === 'deposit' ? 'decrement' : 'increment']: oldAmount,
               },
             },
           });
@@ -181,7 +181,7 @@ export class TransactionModel {
               where: { account_id },
               data: {
                 balance: {
-                  [updateData.type === "deposit" ? "increment" : "decrement"]:
+                  [updateData.type === 'deposit' ? 'increment' : 'decrement']:
                     updateData.amount,
                 },
               },
@@ -200,7 +200,7 @@ export class TransactionModel {
         return updatedTransaction;
       });
     } catch (error) {
-      console.error("Error updating transaction:", error);
+      console.error('Error updating transaction:', error);
       throw error;
     }
   };
@@ -220,7 +220,7 @@ export class TransactionModel {
           where: { account_id: transaction.account_id },
           data: {
             balance: {
-              [transaction.type === "deposit" ? "decrement" : "increment"]:
+              [transaction.type === 'deposit' ? 'decrement' : 'increment']:
                 transaction.amount,
             },
           },
@@ -231,7 +231,7 @@ export class TransactionModel {
         });
       });
     } catch (error) {
-      console.error("Error deleting transaction:", error);
+      console.error('Error deleting transaction:', error);
       throw error;
     }
   };

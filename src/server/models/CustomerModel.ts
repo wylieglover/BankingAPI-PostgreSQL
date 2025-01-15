@@ -1,11 +1,11 @@
-import bcrypt from "bcrypt";
-import { PrismaClient, customers } from "@prisma/client";
+import bcrypt from 'bcrypt';
+import { PrismaClient, customers } from '@prisma/client';
 import {
   CreateCustomerDTO,
   UpdateCustomerDTO,
   CustomerPaginationParams,
-} from "../types/customer";
-import { Decimal } from "@prisma/client/runtime/library";
+} from '../types/customer';
+import { Decimal } from '@prisma/client/runtime/library';
 
 export class CustomerModel {
   private prisma: PrismaClient;
@@ -16,7 +16,7 @@ export class CustomerModel {
 
   login = async (
     username: string,
-    password: string,
+    password: string
   ): Promise<customers | null> => {
     try {
       const customer = await this.prisma.customers.findUnique({
@@ -24,17 +24,17 @@ export class CustomerModel {
       });
 
       if (!customer) {
-        throw new Error("Invalid username or password");
+        throw new Error('Invalid username or password');
       }
 
       const isPasswordValid = await bcrypt.compare(password, customer.password);
       if (!isPasswordValid) {
-        throw new Error("Invalid username or password");
+        throw new Error('Invalid username or password');
       }
 
       return customer;
     } catch (error) {
-      console.error("Login error:", error);
+      console.error('Login error:', error);
       throw error;
     }
   };
@@ -57,7 +57,7 @@ export class CustomerModel {
     });
 
     if (!customerExists) {
-      throw new Error("Customer not found");
+      throw new Error('Customer not found');
     }
 
     // Fetch all account balances
@@ -106,7 +106,7 @@ export class CustomerModel {
   };
 
   createCustomer = async (
-    customerData: CreateCustomerDTO,
+    customerData: CreateCustomerDTO
   ): Promise<customers> => {
     try {
       const hashedPassword = await bcrypt.hash(customerData.password, 10);
@@ -121,13 +121,13 @@ export class CustomerModel {
         },
       });
     } catch (error) {
-      console.error("Error creating customer:", error);
+      console.error('Error creating customer:', error);
       throw error;
     }
   };
 
   getAllCustomers = async (
-    params: CustomerPaginationParams,
+    params: CustomerPaginationParams
   ): Promise<{ customers: customers[]; total: number }> => {
     try {
       // Let's check what we're getting from Prisma
@@ -138,14 +138,14 @@ export class CustomerModel {
         },
         skip: (params.page - 1) * params.pageSize,
         take: params.pageSize,
-        orderBy: { name: "asc" },
+        orderBy: { name: 'asc' },
       });
 
       const total = await this.prisma.customers.count();
 
       return { customers, total };
     } catch (error) {
-      console.error("Error fetching customers:", error);
+      console.error('Error fetching customers:', error);
       throw error;
     }
   };
@@ -160,26 +160,26 @@ export class CustomerModel {
         },
       });
     } catch (error) {
-      console.error("Error fetching customer:", error);
+      console.error('Error fetching customer:', error);
       throw error;
     }
   };
 
   getCustomerByUsername = async (
-    username: string,
+    username: string
   ): Promise<customers | null> => {
     try {
       return await this.prisma.customers.findUnique({
         where: { username },
       });
     } catch (error) {
-      console.error("Error fetching customer by username:", error);
+      console.error('Error fetching customer by username:', error);
       throw error;
     }
   };
 
   updateCustomer = async (
-    updateData: UpdateCustomerDTO,
+    updateData: UpdateCustomerDTO
   ): Promise<customers> => {
     try {
       let hashedPassword;
@@ -196,7 +196,7 @@ export class CustomerModel {
         },
       });
     } catch (error) {
-      console.error("Error updating customer:", error);
+      console.error('Error updating customer:', error);
       throw error;
     }
   };
@@ -207,14 +207,14 @@ export class CustomerModel {
         where: { customer_id: customerId },
       });
     } catch (error) {
-      console.error("Error deleting customer:", error);
+      console.error('Error deleting customer:', error);
       throw error;
     }
   };
 
   validateCustomerPassword = async (
     storedPassword: string,
-    inputPassword: string,
+    inputPassword: string
   ): Promise<boolean> => {
     return bcrypt.compare(inputPassword, storedPassword);
   };

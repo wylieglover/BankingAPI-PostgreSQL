@@ -1,10 +1,10 @@
-import express, { Application, Request, Response, NextFunction } from "express";
-import routes from "./routes/index.routes";
-import dotenv from "dotenv";
-import helmet from "helmet";
-import morgan from "morgan";
-import { Logger, stream } from "./middleware/utils/Logger";
-import cors from "cors";
+import express, { Application, Request, Response, NextFunction } from 'express';
+import routes from './routes/index.routes';
+import dotenv from 'dotenv';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import { Logger, stream } from './middleware/utils/Logger';
+import cors from 'cors';
 
 dotenv.config();
 
@@ -33,7 +33,7 @@ class App {
     this.app.use(helmet());
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
-    this.app.use(morgan("combined", { stream }));
+    this.app.use(morgan('combined', { stream }));
 
     const whitelist = [
       `http://localhost:${this.client_port}`,
@@ -50,22 +50,22 @@ class App {
             // Reject requests from disallowed origins
             callback(
               new Error(
-                `CORS Error: Origin '${origin}' is not allowed by the server`,
-              ),
+                `CORS Error: Origin '${origin}' is not allowed by the server`
+              )
             );
           }
         },
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed HTTP methods
-        allowedHeaders: ["Authorization", "Content-Type"], // Allowed headers
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
+        allowedHeaders: ['Authorization', 'Content-Type'], // Allowed headers
         credentials: true, // Allow credentials (cookies, Authorization header, etc.)
-      }),
+      })
     );
   }
 
   private initializeRoutes() {
-    this.app.use("/api", routes);
-    this.app.get("/", (req: Request, res: Response) => {
-      res.status(200).json({ status: "API is running" });
+    this.app.use('/api', routes);
+    this.app.get('/', (req: Request, res: Response) => {
+      res.status(200).json({ status: 'API is running' });
     });
   }
 
@@ -73,7 +73,7 @@ class App {
     this.app.use(
       (err: any, req: Request, res: Response, next: NextFunction) => {
         Logger.error(`Primary Handler: ${err.message}`);
-      },
+      }
     );
   }
 

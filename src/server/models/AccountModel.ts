@@ -1,11 +1,11 @@
-import { PrismaClient, accounts } from "@prisma/client";
+import { PrismaClient, accounts } from '@prisma/client';
 import {
   CreateAccountDTO,
   UpdateAccountDTO,
   AccountPaginationParams,
-} from "../types/account";
-import { error } from "console";
-import { successResponse } from "@middleware/authMiddleware";
+} from '../types/account';
+import { error } from 'console';
+import { successResponse } from '@middleware/authMiddleware';
 
 export class AccountModel {
   private prisma: PrismaClient;
@@ -21,7 +21,7 @@ export class AccountModel {
       });
 
       if (!customer) {
-        throw new Error("Customer does not exist.");
+        throw new Error('Customer does not exist.');
       }
       const account = await this.prisma.accounts.create({
         data: {
@@ -33,14 +33,14 @@ export class AccountModel {
 
       return account;
     } catch (error) {
-      console.error("Error creating account:", error);
+      console.error('Error creating account:', error);
       throw error;
     }
   };
 
   getAccountTypeDistribution = async () => {
     const distribution = await this.prisma.accounts.groupBy({
-      by: ["type"],
+      by: ['type'],
       _count: {
         type: true,
       },
@@ -54,7 +54,7 @@ export class AccountModel {
 
   getAverageAccountsPerCustomer = async () => {
     const result = await this.prisma.accounts.groupBy({
-      by: ["customer_id"],
+      by: ['customer_id'],
       _count: {
         customer_id: true,
       },
@@ -62,7 +62,7 @@ export class AccountModel {
 
     const totalAccounts = result.reduce(
       (sum, entry) => sum + entry._count.customer_id,
-      0,
+      0
     );
     const totalCustomers = result.length;
 
@@ -106,17 +106,17 @@ export class AccountModel {
   };
 
   getAllAccounts = async (
-    params: AccountPaginationParams,
+    params: AccountPaginationParams
   ): Promise<accounts[]> => {
     try {
       return await this.prisma.accounts.findMany({
         where: params.customerId ? { customer_id: params.customerId } : {},
         include: { transactions: true },
         skip: (params.page - 1) * params.pageSize,
-        orderBy: { balance: "asc" },
+        orderBy: { balance: 'asc' },
       });
     } catch (error) {
-      console.error("Error fetching accounts:", error);
+      console.error('Error fetching accounts:', error);
       throw error;
     }
   };
@@ -125,11 +125,11 @@ export class AccountModel {
     try {
       console.error(accountId);
       return await this.prisma.accounts.findUnique({
-        where: { account_id: "urn:uuid:" + accountId },
+        where: { account_id: 'urn:uuid:' + accountId },
         include: { transactions: true },
       });
     } catch (error) {
-      console.error("Error fetching account by accountId:", error);
+      console.error('Error fetching account by accountId:', error);
       throw error;
     }
   };
@@ -142,20 +142,20 @@ export class AccountModel {
 
       if (!existingAccount) {
         throw new Error(
-          `Account with ID ${updatedData.accountId} does not exist.`,
+          `Account with ID ${updatedData.accountId} does not exist.`
         );
       }
 
       if (updatedData.balance !== undefined && updatedData.balance < 0) {
-        throw new Error("Balance cannot be negative.");
+        throw new Error('Balance cannot be negative.');
       }
 
       if (
         updatedData.type !== undefined &&
-        !["savings", "checking"].includes(updatedData.type)
+        !['savings', 'checking'].includes(updatedData.type)
       ) {
         throw new Error(
-          'Invalid account type. Must be "savings" or "checking".',
+          'Invalid account type. Must be "savings" or "checking".'
         );
       }
 
@@ -171,7 +171,7 @@ export class AccountModel {
 
       return updatedAccount;
     } catch (error) {
-      console.error("Error updating account:", error);
+      console.error('Error updating account:', error);
       throw error;
     }
   };
@@ -182,7 +182,7 @@ export class AccountModel {
         where: { account_id: accountId },
       });
     } catch (error) {
-      console.error("Error deleting account:", error);
+      console.error('Error deleting account:', error);
       throw error;
     }
   };

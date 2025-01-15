@@ -1,4 +1,4 @@
-import { PrismaClient, account_type, transaction_type } from "@prisma/client";
+import { PrismaClient, account_type, transaction_type } from '@prisma/client';
 
 const prisma = new PrismaClient();
 

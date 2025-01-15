@@ -1,13 +1,13 @@
-import { Request, Response, NextFunction } from "express";
-import { BeneficiariesModel } from "../models/BeneficiaryModel";
-import { PrismaClient } from "@prisma/client";
+import { Request, Response, NextFunction } from 'express';
+import { BeneficiariesModel } from '../models/BeneficiaryModel';
+import { PrismaClient } from '@prisma/client';
 import {
   CreateBeneficiaryDTO,
   UpdateBeneficiaryDTO,
   BeneficiaryPaginationParams,
-} from "../types/beneficiary";
+} from '../types/beneficiary';
 
-import { errorResponse, successResponse } from "../middleware/authMiddleware";
+import { errorResponse, successResponse } from '../middleware/authMiddleware';
 
 export class BeneficiaryController {
   private beneficiariesModel: BeneficiariesModel;
@@ -19,7 +19,7 @@ export class BeneficiaryController {
   createBeneficiaryController = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const beneficiaryData: CreateBeneficiaryDTO = req.body;
@@ -30,13 +30,13 @@ export class BeneficiaryController {
         !beneficiaryData.accountNumber ||
         !beneficiaryData.bankDetails
       ) {
-        errorResponse(res, "All fields are required", 400);
+        errorResponse(res, 'All fields are required', 400);
         return;
       }
 
       const newBeneficiary =
         await this.beneficiariesModel.createBeneficiary(beneficiaryData);
-      successResponse(res, "Beneficiary created", newBeneficiary, 201);
+      successResponse(res, 'Beneficiary created', newBeneficiary, 201);
     } catch (error) {
       next(error);
     }
@@ -45,7 +45,7 @@ export class BeneficiaryController {
   getAllBeneficiariesController = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const customerId = req.params.customerId;
@@ -60,7 +60,7 @@ export class BeneficiaryController {
       const beneficiaries =
         await this.beneficiariesModel.getAllBeneficiaries(params);
 
-      successResponse(res, "Beneficiaries retrieved", beneficiaries);
+      successResponse(res, 'Beneficiaries retrieved', beneficiaries);
     } catch (error) {
       next(error);
     }
@@ -69,7 +69,7 @@ export class BeneficiaryController {
   getBeneficiariesCount = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const startDate = req.query.startDate
@@ -84,7 +84,7 @@ export class BeneficiaryController {
       const beneficiariesCount =
         await this.beneficiariesModel.count(dateFilter);
 
-      successResponse(res, "Beneficiaries count retrieved", {
+      successResponse(res, 'Beneficiaries count retrieved', {
         count: beneficiariesCount,
       });
     } catch (error) {
@@ -95,7 +95,7 @@ export class BeneficiaryController {
   getBeneficiaryByIdController = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const { beneficiaryId } = req.params;
@@ -103,11 +103,11 @@ export class BeneficiaryController {
       const beneficiary =
         await this.beneficiariesModel.getBeneficiaryById(beneficiaryId);
       if (!beneficiary) {
-        errorResponse(res, "Beneficiary not found", 404);
+        errorResponse(res, 'Beneficiary not found', 404);
         return;
       }
 
-      successResponse(res, "Beneficiary retrieved", beneficiary);
+      successResponse(res, 'Beneficiary retrieved', beneficiary);
     } catch (error) {
       next(error);
     }
@@ -116,7 +116,7 @@ export class BeneficiaryController {
   updateBeneficiaryController = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const { beneficiaryId } = req.params;
@@ -125,12 +125,12 @@ export class BeneficiaryController {
       const existingBeneficiary =
         await this.beneficiariesModel.getBeneficiaryById(beneficiaryId);
       if (!existingBeneficiary) {
-        errorResponse(res, "Beneficiary not found", 404);
+        errorResponse(res, 'Beneficiary not found', 404);
         return;
       }
 
       if (!Object.keys({ name, accountNumber, bankDetails }).length) {
-        errorResponse(res, "No fields provided for update", 400);
+        errorResponse(res, 'No fields provided for update', 400);
         return;
       }
 
@@ -143,7 +143,7 @@ export class BeneficiaryController {
 
       const updatedBeneficiary =
         await this.beneficiariesModel.updateBeneficiary(updatedData);
-      successResponse(res, "Beneficiary updated", updatedBeneficiary);
+      successResponse(res, 'Beneficiary updated', updatedBeneficiary);
     } catch (error) {
       next(error);
     }
@@ -152,7 +152,7 @@ export class BeneficiaryController {
   deleteBeneficiaryController = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const { beneficiaryId } = req.params;
@@ -160,12 +160,12 @@ export class BeneficiaryController {
       const beneficiary =
         await this.beneficiariesModel.getBeneficiaryById(beneficiaryId);
       if (!beneficiary) {
-        res.status(404).json({ error: "Beneficiary not found." });
+        res.status(404).json({ error: 'Beneficiary not found.' });
         return;
       }
 
       await this.beneficiariesModel.deleteBeneficiary(beneficiaryId);
-      successResponse(res, "Beneficiary deleted successfully", null, 204);
+      successResponse(res, 'Beneficiary deleted successfully', null, 204);
     } catch (error) {
       next(error);
     }

@@ -4,14 +4,14 @@ import {
   format,
   transports,
   Logger as WinstonLogger,
-} from "winston";
-import path from "path";
-import winston from "winston";
-import DailyRotateFile from "winston-daily-rotate-file";
-import fs from "fs";
+} from 'winston';
+import path from 'path';
+import winston from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
+import fs from 'fs';
 
 // Ensure the logs directory exists
-const logDir = path.join(__dirname, "../logs");
+const logDir = path.join(__dirname, '../logs');
 if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir);
 }
@@ -26,11 +26,11 @@ const logLevels = {
     debug: 4,
   },
   colors: {
-    error: "red",
-    warn: "yellow",
-    info: "green",
-    http: "magenta",
-    debug: "white",
+    error: 'red',
+    warn: 'yellow',
+    info: 'green',
+    http: 'magenta',
+    debug: 'white',
   },
 };
 
@@ -43,41 +43,41 @@ const logFormat = format.combine(
   }),
   format.errors({ stack: true }), // Include stack trace
   format.splat(),
-  format.json(), // Output logs in JSON format
+  format.json() // Output logs in JSON format
 );
 
 // Define transports
 const loggerTransports = [
   // Console transport for development
   new transports.Console({
-    level: process.env.NODE_ENV === "production" ? "info" : "debug",
+    level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
     format: format.combine(
       format.colorize({ all: true }),
       format.printf(({ level, message, timestamp, stack }) => {
         return `${timestamp} [${level}]: ${stack || message}`;
-      }),
+      })
     ),
   }),
 
   // Daily rotate file transport for combined logs
   new DailyRotateFile({
-    level: "info",
-    filename: path.join(logDir, "combined-%DATE%.log"),
-    datePattern: "YYYY-MM-DD",
+    level: 'info',
+    filename: path.join(logDir, 'combined-%DATE%.log'),
+    datePattern: 'YYYY-MM-DD',
     zippedArchive: true,
-    maxSize: "20m",
-    maxFiles: "14d",
+    maxSize: '20m',
+    maxFiles: '14d',
     format: logFormat,
   }),
 
   // Daily rotate file transport for error logs
   new DailyRotateFile({
-    level: "error",
-    filename: path.join(logDir, "error-%DATE%.log"),
-    datePattern: "YYYY-MM-DD",
+    level: 'error',
+    filename: path.join(logDir, 'error-%DATE%.log'),
+    datePattern: 'YYYY-MM-DD',
     zippedArchive: true,
-    maxSize: "20m",
-    maxFiles: "30d",
+    maxSize: '20m',
+    maxFiles: '30d',
     format: logFormat,
   }),
 ];
@@ -99,14 +99,14 @@ const stream = {
 };
 
 // Handle uncaught exceptions and unhandled rejections
-process.on("uncaughtException", (error: Error) => {
-  Logger.error("Uncaught Exception: %s", error.message);
-  Logger.error(error.stack || "");
+process.on('uncaughtException', (error: Error) => {
+  Logger.error('Uncaught Exception: %s', error.message);
+  Logger.error(error.stack || '');
   process.exit(1); // Optional: exit the process
 });
 
-process.on("unhandledRejection", (reason: any, promise: Promise<any>) => {
-  Logger.error("Unhandled Rejection at: %s, reason: %s", promise, reason);
+process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
+  Logger.error('Unhandled Rejection at: %s, reason: %s', promise, reason);
   // Optionally, exit the process or perform other actions
 });
 

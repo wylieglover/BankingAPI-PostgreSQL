@@ -1,6 +1,6 @@
-import { Request, Response } from "express";
-import { authService } from "../middleware/services/AuthService";
-import { Logger } from "../middleware/utils/Logger";
+import { Request, Response } from 'express';
+import { authService } from '../middleware/services/AuthService';
+import { Logger } from '../middleware/utils/Logger';
 
 export class AuthController {
   static async refreshToken(req: Request, res: Response): Promise<void> {
@@ -8,7 +8,7 @@ export class AuthController {
       const { refreshToken } = req.body;
 
       if (!refreshToken) {
-        res.status(400).json({ error: "Refresh token is required" });
+        res.status(400).json({ error: 'Refresh token is required' });
         return;
       }
 
@@ -22,8 +22,8 @@ export class AuthController {
         token: newAccessToken,
       });
     } catch (error: any) {
-      Logger.error("Error refreshing token:", error.message);
-      res.status(401).json({ error: "Invalid or expired refresh token" });
+      Logger.error('Error refreshing token:', error.message);
+      res.status(401).json({ error: 'Invalid or expired refresh token' });
     }
   }
 }

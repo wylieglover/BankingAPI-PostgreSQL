@@ -1,4 +1,4 @@
-import { account_type } from "@prisma/client";
+import { account_type } from '@prisma/client';
 
 export interface CreateAccountDTO {
   customerId: string;

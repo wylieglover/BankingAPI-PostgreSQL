@@ -1,13 +1,13 @@
-import { Request, Response, NextFunction } from "express";
-import { AccountModel } from "../models";
-import { account_type } from "../prisma";
-import { PrismaClient } from "@prisma/client";
+import { Request, Response, NextFunction } from 'express';
+import { AccountModel } from '../models';
+import { account_type } from '../prisma';
+import { PrismaClient } from '@prisma/client';
 import {
   CreateAccountDTO,
   UpdateAccountDTO,
   AccountPaginationParams,
-} from "../types/account";
-import { successResponse, errorResponse } from "../middleware/authMiddleware";
+} from '../types/account';
+import { successResponse, errorResponse } from '../middleware/authMiddleware';
 
 export class AccountController {
   private accountModel: AccountModel;
@@ -19,22 +19,22 @@ export class AccountController {
   createAccountController = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const { customerId } = req.params;
       const { type, balance } = req.body;
 
-      if (typeof customerId !== "string" || typeof balance !== "number") {
-        errorResponse(res, "Invalid input types", 400);
+      if (typeof customerId !== 'string' || typeof balance !== 'number') {
+        errorResponse(res, 'Invalid input types', 400);
         return;
       }
 
       if (!Object.values(account_type).includes(type)) {
         errorResponse(
           res,
-          `Invalid account type. Allowed values: ${Object.values(account_type).join(", ")}`,
-          400,
+          `Invalid account type. Allowed values: ${Object.values(account_type).join(', ')}`,
+          400
         );
         return;
       }
@@ -44,7 +44,7 @@ export class AccountController {
 
       successResponse(
         res,
-        "Account created successfully",
+        'Account created successfully',
         {
           accountId: account.account_id,
           customerId: account.customer_id,
@@ -54,7 +54,7 @@ export class AccountController {
             ? new Date(account.created_at).toLocaleString()
             : null,
         },
-        201,
+        201
       );
     } catch (error) {
       next(error);
@@ -64,7 +64,7 @@ export class AccountController {
   getAccountAnalytics = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const [
@@ -77,7 +77,7 @@ export class AccountController {
         this.accountModel.getAccountGrowthByMonth(),
       ]);
 
-      successResponse(res, "Account analytics retrieved", {
+      successResponse(res, 'Account analytics retrieved', {
         accountTypeDistribution,
         averageAccountsPerCustomer,
         accountGrowthByMonth,
@@ -90,7 +90,7 @@ export class AccountController {
   getAccountCount = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const startDate = req.query.startDate
@@ -104,7 +104,7 @@ export class AccountController {
         (startDate && isNaN(startDate.getTime())) ||
         (endDate && isNaN(endDate.getTime()))
       ) {
-        errorResponse(res, "Invalid date format", 400);
+        errorResponse(res, 'Invalid date format', 400);
         return;
       }
 
@@ -112,7 +112,7 @@ export class AccountController {
         startDate || endDate ? { startDate, endDate } : undefined;
       const accountsCount = await this.accountModel.count(dateFilter);
 
-      successResponse(res, "Accounts count retrieved", {
+      successResponse(res, 'Accounts count retrieved', {
         count: accountsCount,
       });
     } catch (error) {
@@ -123,7 +123,7 @@ export class AccountController {
   getAllAccountsController = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const { customerId } = req.params;
@@ -137,7 +137,7 @@ export class AccountController {
       };
 
       const accounts = await this.accountModel.getAllAccounts(params);
-      successResponse(res, "Accounts retrieved successfully", accounts);
+      successResponse(res, 'Accounts retrieved successfully', accounts);
     } catch (error) {
       next(error);
     }
@@ -146,23 +146,23 @@ export class AccountController {
   getAccountByIdController = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const { accountId } = req.params;
 
-      if (typeof accountId !== "string") {
-        errorResponse(res, "Invalid account ID", 400);
+      if (typeof accountId !== 'string') {
+        errorResponse(res, 'Invalid account ID', 400);
         return;
       }
 
       const account = await this.accountModel.getAccountById(accountId);
       if (!account) {
-        errorResponse(res, "Account not found", 404);
+        errorResponse(res, 'Account not found', 404);
         return;
       }
 
-      successResponse(res, "Account retrieved successfully", account);
+      successResponse(res, 'Account retrieved successfully', account);
     } catch (error) {
       next(error);
     }
@@ -171,13 +171,13 @@ export class AccountController {
   updateAccountController = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const { accountId } = req.params;
 
-      if (typeof accountId !== "string") {
-        errorResponse(res, "Invalid account ID", 400);
+      if (typeof accountId !== 'string') {
+        errorResponse(res, 'Invalid account ID', 400);
         return;
       }
 
@@ -186,14 +186,14 @@ export class AccountController {
       if (type && !Object.values(account_type).includes(type as account_type)) {
         errorResponse(
           res,
-          `Invalid account type. Allowed: ${Object.values(account_type).join(", ")}`,
-          400,
+          `Invalid account type. Allowed: ${Object.values(account_type).join(', ')}`,
+          400
         );
         return;
       }
 
-      if (balance && typeof balance !== "number") {
-        errorResponse(res, "Invalid balance type", 400);
+      if (balance && typeof balance !== 'number') {
+        errorResponse(res, 'Invalid balance type', 400);
         return;
       }
 
@@ -201,11 +201,11 @@ export class AccountController {
       const account = await this.accountModel.updateAccount(updatedData);
 
       if (!account) {
-        errorResponse(res, "Account not found", 404);
+        errorResponse(res, 'Account not found', 404);
         return;
       }
 
-      successResponse(res, "Account updated successfully", account);
+      successResponse(res, 'Account updated successfully', account);
     } catch (error) {
       next(error);
     }
@@ -214,18 +214,18 @@ export class AccountController {
   deleteAccountController = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const { accountId } = req.params;
 
-      if (typeof accountId !== "string") {
-        errorResponse(res, "Invalid account ID", 400);
+      if (typeof accountId !== 'string') {
+        errorResponse(res, 'Invalid account ID', 400);
         return;
       }
 
       await this.accountModel.deleteAccount(accountId);
-      successResponse(res, "Account deleted successfully", null, 204);
+      successResponse(res, 'Account deleted successfully', null, 204);
     } catch (error) {
       next(error);
     }

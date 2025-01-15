@@ -1,9 +1,9 @@
-import { PrismaClient, beneficiaries } from "@prisma/client";
+import { PrismaClient, beneficiaries } from '@prisma/client';
 import {
   CreateBeneficiaryDTO,
   UpdateBeneficiaryDTO,
   BeneficiaryPaginationParams,
-} from "../types/beneficiary";
+} from '../types/beneficiary';
 
 export class BeneficiariesModel {
   private prisma: PrismaClient;
@@ -13,7 +13,7 @@ export class BeneficiariesModel {
   }
 
   createBeneficiary = async (
-    data: CreateBeneficiaryDTO,
+    data: CreateBeneficiaryDTO
   ): Promise<beneficiaries> => {
     try {
       return await this.prisma.beneficiaries.create({
@@ -25,7 +25,7 @@ export class BeneficiariesModel {
         },
       });
     } catch (error) {
-      console.error("Error creating beneficiary:", error);
+      console.error('Error creating beneficiary:', error);
       throw error;
     }
   };
@@ -49,36 +49,36 @@ export class BeneficiariesModel {
   };
 
   getAllBeneficiaries = async (
-    params: BeneficiaryPaginationParams,
+    params: BeneficiaryPaginationParams
   ): Promise<beneficiaries[]> => {
     try {
       return await this.prisma.beneficiaries.findMany({
         where: { customer_id: params.customerId },
         skip: (params.page - 1) * params.pageSize,
         take: params.pageSize,
-        orderBy: { name: "asc" },
+        orderBy: { name: 'asc' },
       });
     } catch (error) {
-      console.error("Error fetching beneficiaries:", error);
+      console.error('Error fetching beneficiaries:', error);
       throw error;
     }
   };
 
   getBeneficiaryById = async (
-    beneficiaryId: string,
+    beneficiaryId: string
   ): Promise<beneficiaries | null> => {
     try {
       return await this.prisma.beneficiaries.findUnique({
         where: { beneficiary_id: beneficiaryId },
       });
     } catch (error) {
-      console.error("Error fetching beneficiary by ID:", error);
+      console.error('Error fetching beneficiary by ID:', error);
       throw error;
     }
   };
 
   updateBeneficiary = async (
-    updatedData: UpdateBeneficiaryDTO,
+    updatedData: UpdateBeneficiaryDTO
   ): Promise<beneficiaries> => {
     try {
       return await this.prisma.beneficiaries.update({
@@ -90,7 +90,7 @@ export class BeneficiariesModel {
         },
       });
     } catch (error) {
-      console.error("Error updating beneficiary:", error);
+      console.error('Error updating beneficiary:', error);
       throw error;
     }
   };
@@ -101,7 +101,7 @@ export class BeneficiariesModel {
         where: { beneficiary_id: beneficiaryId },
       });
     } catch (error) {
-      console.error("Error deleting beneficiary:", error);
+      console.error('Error deleting beneficiary:', error);
       throw error;
     }
   };

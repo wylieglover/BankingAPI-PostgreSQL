@@ -1,5 +1,5 @@
-import axios from "axios";
-import { isTokenExpired } from "@/context/authUtils";
+import axios from 'axios';
+import { isTokenExpired } from '@/context/authUtils';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
@@ -19,7 +19,7 @@ function onRefreshSuccess(newToken: string) {
 }
 
 api.interceptors.request.use(async (config) => {
-  const token = localStorage.getItem("authToken");
+  const token = localStorage.getItem('authToken');
 
   if (token) {
     if (isTokenExpired(token)) {
@@ -29,21 +29,21 @@ api.interceptors.request.use(async (config) => {
           const refreshResponse = await axios.post(
             `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/refresh-token`,
             {},
-            { withCredentials: true },
+            { withCredentials: true }
           );
 
           const newToken = refreshResponse.data.token;
-          localStorage.setItem("authToken", newToken);
+          localStorage.setItem('authToken', newToken);
 
           onRefreshSuccess(newToken);
           isRefreshing = false;
         } catch (refreshError) {
           isRefreshing = false;
           refreshSubscribers = [];
-          localStorage.removeItem("authToken");
-          localStorage.removeItem("customer");
-          window.location.href = "/login";
-          throw new axios.Cancel("Token expired and refresh failed");
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('customer');
+          window.location.href = '/login';
+          throw new axios.Cancel('Token expired and refresh failed');
         }
       }
       return new Promise((resolve) => {
@@ -62,12 +62,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("customer");
-      window.location.href = "/login";
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('customer');
+      window.location.href = '/login';
     }
     return Promise.reject(error);
-  },
+  }
 );
 
 export default api;

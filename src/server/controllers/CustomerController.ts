@@ -1,10 +1,10 @@
-import { Request, Response, NextFunction } from "express";
-import { CustomerModel } from "../models/CustomerModel";
-import { PrismaClient } from "@prisma/client";
-import { CreateCustomerDTO, UpdateCustomerDTO } from "../types/customer";
-import { successResponse, errorResponse } from "../middleware/authMiddleware";
-import { validationResult } from "express-validator";
-import { authService } from "../middleware/services/AuthService";
+import { Request, Response, NextFunction } from 'express';
+import { CustomerModel } from '../models/CustomerModel';
+import { PrismaClient } from '@prisma/client';
+import { CreateCustomerDTO, UpdateCustomerDTO } from '../types/customer';
+import { successResponse, errorResponse } from '../middleware/authMiddleware';
+import { validationResult } from 'express-validator';
+import { authService } from '../middleware/services/AuthService';
 
 export class CustomerController {
   private customerModel: CustomerModel;
@@ -16,12 +16,12 @@ export class CustomerController {
   createCustomerController = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const customerData: CreateCustomerDTO = req.body;
       const customer = await this.customerModel.createCustomer(customerData);
-      customer.password = "";
+      customer.password = '';
 
       const token = authService.signToken({
         customer_id: customer.customer_id,
@@ -29,12 +29,12 @@ export class CustomerController {
 
       successResponse(
         res,
-        "Customer created",
+        'Customer created',
         {
           customer: customer,
           token,
         },
-        201,
+        201
       );
     } catch (error) {
       next(error);
@@ -44,26 +44,26 @@ export class CustomerController {
   login = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        errorResponse(res, "Validation failed", 400);
+        errorResponse(res, 'Validation failed', 400);
         return;
       }
 
       const { username, password } = req.body;
 
       if (!username || !password) {
-        errorResponse(res, "Username and password are required", 400);
+        errorResponse(res, 'Username and password are required', 400);
         return;
       }
 
       const customer = await this.customerModel.login(username, password);
 
       if (!customer) {
-        errorResponse(res, "Invalid username or password", 401);
+        errorResponse(res, 'Invalid username or password', 401);
         return;
       }
 
@@ -73,12 +73,12 @@ export class CustomerController {
 
       successResponse(
         res,
-        "Login successful",
+        'Login successful',
         {
           customer: customer,
           token,
         },
-        200,
+        200
       );
     } catch (error) {
       next(error);
@@ -88,19 +88,19 @@ export class CustomerController {
   getCustomerAnalytics = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const [totalCount, newCustomersThisMonth, customersByMonth] =
         await Promise.all([
           this.customerModel.count(),
           this.customerModel.getNewCustomersCount(
-            new Date(new Date().setMonth(new Date().getMonth() - 1)),
+            new Date(new Date().setMonth(new Date().getMonth() - 1))
           ),
           this.customerModel.getCustomersByMonth(),
         ]);
 
-      successResponse(res, "Customer analytics retrieved", {
+      successResponse(res, 'Customer analytics retrieved', {
         totalCount,
         newCustomersThisMonth,
         customersByMonth,
@@ -113,18 +113,18 @@ export class CustomerController {
   getCustomerBalanceController = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const { customerId } = req.params;
 
       if (!customerId) {
-        errorResponse(res, "Customer ID is required", 400);
+        errorResponse(res, 'Customer ID is required', 400);
         return;
       }
 
       const balance = await this.customerModel.getCustomerBalance(customerId);
-      successResponse(res, "Customer balance retrieved", Number(balance), 200);
+      successResponse(res, 'Customer balance retrieved', Number(balance), 200);
     } catch (error) {
       next(error);
     }
@@ -133,7 +133,7 @@ export class CustomerController {
   getCustomerCount = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const startDate = req.query.startDate
@@ -147,7 +147,7 @@ export class CustomerController {
         startDate || endDate ? { startDate, endDate } : undefined;
       const customersCount = await this.customerModel.count(dateFilter);
 
-      successResponse(res, "Customers count retrieved", {
+      successResponse(res, 'Customers count retrieved', {
         count: customersCount,
       });
     } catch (error) {
@@ -158,7 +158,7 @@ export class CustomerController {
   getAllCustomersController = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const page = parseInt(req.query.page as string, 10) || 1;
@@ -174,7 +174,7 @@ export class CustomerController {
         password: undefined,
       }));
 
-      successResponse(res, "Customers retrieved", {
+      successResponse(res, 'Customers retrieved', {
         data: sanitizedCustomers,
         meta: {
           total,
@@ -191,23 +191,23 @@ export class CustomerController {
   getCustomerByIdController = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const { customerId } = req.params;
 
       if (!customerId) {
-        errorResponse(res, "Customer ID is required", 400);
+        errorResponse(res, 'Customer ID is required', 400);
         return;
       }
 
       const customer = await this.customerModel.getCustomerById(customerId);
 
       if (!customer) {
-        errorResponse(res, "Customer not found", 404);
+        errorResponse(res, 'Customer not found', 404);
         return;
       }
-      successResponse(res, "Customer retrieved", customer);
+      successResponse(res, 'Customer retrieved', customer);
     } catch (error) {
       next(error);
     }
@@ -216,7 +216,7 @@ export class CustomerController {
   updateCustomerController = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const { customerId } = req.params;
@@ -234,13 +234,13 @@ export class CustomerController {
         await this.customerModel.updateCustomer(updateCustomerData);
 
       if (!customer) {
-        errorResponse(res, "Customer not found", 404);
+        errorResponse(res, 'Customer not found', 404);
         return;
       }
 
-      customer.password = "";
+      customer.password = '';
 
-      successResponse(res, "Customer updated", customer);
+      successResponse(res, 'Customer updated', customer);
     } catch (error) {
       next(error);
     }
@@ -249,13 +249,13 @@ export class CustomerController {
   deleteCustomerController = async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const { customerId } = req.params;
 
       await this.customerModel.deleteCustomer(customerId);
-      successResponse(res, "Customer deleted successfully", null, 204);
+      successResponse(res, 'Customer deleted successfully', null, 204);
     } catch (error) {
       next(error);
     }

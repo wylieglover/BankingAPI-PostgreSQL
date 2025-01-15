@@ -1,4 +1,4 @@
-import { transaction_type } from "@prisma/client";
+import { transaction_type } from '@prisma/client';
 
 export interface CreateTransactionDTO {
   type: transaction_type;

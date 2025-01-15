@@ -1,6 +1,6 @@
-import { CustomJwtPayload } from "../../types/jwt-types";
-import jwt from "jsonwebtoken";
-import * as dotenv from "dotenv";
+import { CustomJwtPayload } from '../../types/jwt-types';
+import jwt from 'jsonwebtoken';
+import * as dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -10,7 +10,7 @@ export class AuthService {
 
   constructor(secret: string, refreshSecret: string) {
     if (!secret || !refreshSecret) {
-      throw new Error("JWT_SECRET or JWT_REFRESH_SECRET is not defined");
+      throw new Error('JWT_SECRET or JWT_REFRESH_SECRET is not defined');
     }
     this.secret = secret;
     this.refreshSecret = refreshSecret;
@@ -22,7 +22,7 @@ export class AuthService {
 
   signToken(
     payload: { customer_id: string; [key: string]: any },
-    expiresIn = "15m",
+    expiresIn = '15m'
   ): string {
     return jwt.sign(payload, this.secret, { expiresIn });
   }
@@ -31,11 +31,11 @@ export class AuthService {
     try {
       return jwt.verify(token, this.secret) as CustomJwtPayload;
     } catch (error) {
-      throw new Error("Token is invalid or expired");
+      throw new Error('Token is invalid or expired');
     }
   }
 
-  signRefreshToken(payload: { customer_id: string }, expiresIn = "7d"): string {
+  signRefreshToken(payload: { customer_id: string }, expiresIn = '7d'): string {
     return jwt.sign(payload, this.refreshSecret, { expiresIn });
   }
 
@@ -45,6 +45,6 @@ export class AuthService {
 }
 
 export const authService = new AuthService(
-  process.env.JWT_SECRET || "",
-  process.env.JWT_REFRESH_SECRET || "",
+  process.env.JWT_SECRET || '',
+  process.env.JWT_REFRESH_SECRET || ''
 );

@@ -1,34 +1,34 @@
-import { Router } from "express";
-import { AccountController } from "../controllers";
-import { prisma } from "../prisma";
+import { Router } from 'express';
+import { AccountController } from '../controllers';
+import { prisma } from '../prisma';
 import {
   createAccountRules,
   updateAccountRules,
-} from "../middleware/validationMiddleware";
-import { validate } from "../middleware/authMiddleware";
-import transactionRoutes from "./transactions.route";
+} from '../middleware/validationMiddleware';
+import { validate } from '../middleware/authMiddleware';
+import transactionRoutes from './transactions.route';
 
 const router = Router({ mergeParams: true });
 const accountController = new AccountController(prisma);
 
 // Account routes
-router.get("/", accountController.getAllAccountsController);
-router.get("/count", accountController.getAccountCount);
-router.get("/:accountId", accountController.getAccountByIdController);
-router.get("/analytics", accountController.getAccountAnalytics);
+router.get('/', accountController.getAllAccountsController);
+router.get('/count', accountController.getAccountCount);
+router.get('/:accountId', accountController.getAccountByIdController);
+router.get('/analytics', accountController.getAccountAnalytics);
 router.post(
-  "/",
+  '/',
   validate(createAccountRules),
-  accountController.createAccountController,
+  accountController.createAccountController
 );
 router.put(
-  "/:accountId",
+  '/:accountId',
   validate(updateAccountRules),
-  accountController.updateAccountController,
+  accountController.updateAccountController
 );
-router.delete("/:accountId", accountController.deleteAccountController);
+router.delete('/:accountId', accountController.deleteAccountController);
 
 // Nest transaction routes under accounts
-router.use("/:accountId/transactions", transactionRoutes);
+router.use('/:accountId/transactions', transactionRoutes);
 
 export default router;
