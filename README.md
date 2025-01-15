@@ -6,6 +6,20 @@
 
 A robust banking API developed using TypeScript, Node.js, and PostgreSQL, designed to manage core banking operations securely and efficiently.
 
+
+## Git Hooks
+
+This project uses mandatory git hooks for code quality. They are automatically set up when you clone the repository.
+
+If you're not seeing the hooks work:
+1. Check that your git config is correct:
+   ```bash
+   git config --local --list | grep include.path
+2. If needed, manually set it:
+    ```bash
+   git config --local include.path ../.gitconfig
+
+   
 ## Features
 
 - **User Authentication**: Secure user login and registration utilizing JWT tokens.

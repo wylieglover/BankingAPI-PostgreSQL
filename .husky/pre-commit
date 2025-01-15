@@ -1,0 +1,16 @@
+#!/bin/sh
+set -e
+
+echo "Running pre-commit formatting checks..."
+
+# Check client-side formatting
+cd src/client
+echo "Checking client-side formatting..."
+npx prettier --config .prettierrc --check "**/*.{js,ts,css,html}"
+
+# Check server-side formatting
+cd ../server
+echo "Checking server-side formatting..."
+npx prettier --config .prettierrc --check "**/*.{js,ts,css,html}"
+
+echo "All formatting checks passed!"
